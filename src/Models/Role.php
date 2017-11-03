@@ -1,0 +1,155 @@
+<?php
+
+namespace Idsign\Permission\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Idsign\Permission\Traits\HasPermissions;
+use Idsign\Permission\Exceptions\RoleDoesNotExist;
+use Idsign\Permission\Exceptions\GuardDoesNotMatch;
+use Idsign\Permission\Exceptions\RoleAlreadyExists;
+use Idsign\Permission\Contracts\Role as RoleContract;
+use Idsign\Permission\Traits\RefreshesPermissionCache;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+//use Illuminate\Database\Query\JoinClause;
+use DB;
+use Illuminate\Support\Collection;
+
+class Role extends Model implements RoleContract
+{
+    use HasPermissions;
+    use RefreshesPermissionCache;
+
+    public $guarded = ['id'];
+
+    public function __construct(array $attributes = [])
+    {
+        $attributes['guard_name'] = $attributes['guard_name'] ?? config('auth.defaults.guard');
+
+        parent::__construct($attributes);
+
+        $this->setTable(config('permission.table_names.roles'));
+    }
+
+    public static function create(array $attributes = [])
+    {
+        $attributes['guard_name'] = $attributes['guard_name'] ?? config('auth.defaults.guard');
+
+        if (static::where('name', $attributes['name'])->where('guard_name', $attributes['guard_name'])->first()) {
+            throw RoleAlreadyExists::create($attributes['name'], $attributes['guard_name']);
+        }
+
+        if (app()::VERSION < '5.4') {
+            return parent::create($attributes);
+        }
+
+        return static::query()->create($attributes);
+    }
+
+    /**
+     * A role may be given various permissions.
+     */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            config('permission.models.permission'),
+            config('permission.table_names.role_has_permissions')
+        );
+    }
+
+    /**
+     * A role belongs to some users of the model associated with its guard.
+     */
+    public function users(): MorphToMany
+    {
+        return $this->morphedByMany(
+            getModelForGuard($this->attributes['guard_name']),
+            'model',
+            config('permission.table_names.model_has_roles'),
+            'role_id',
+            'model_id'
+        );
+    }
+
+    /**
+     * Find a role by its name and guard name.
+     *
+     * @param string $name
+     * @param string|null $guardName
+     *
+     * @return \Idsign\Permission\Contracts\Role|\Idsign\Permission\Models\Role
+     *
+     * @throws \Idsign\Permission\Exceptions\RoleDoesNotExist
+     */
+    public static function findByName(string $name, $guardName = null): RoleContract
+    {
+        $guardName = $guardName ?? config('auth.defaults.guard');
+
+        $role = static::where('name', $name)->where('guard_name', $guardName)->first();
+
+        if (! $role) {
+            throw RoleDoesNotExist::create($name);
+        }
+
+        return $role;
+    }
+
+    /**
+     * Determine if the user may perform the given permission.
+     *
+     * @param string|Permission $permission
+     *
+     * @param string|Permission $section
+     *
+     * @return bool
+     *
+     * @throws \Idsign\Permission\Exceptions\GuardDoesNotMatch
+     */
+    public function hasPermissionTo($permission, $section): bool
+    {
+        $guard = $this->getDefaultGuardName();
+
+        if (is_string($permission)) {
+            $permission = app(Permission::class)->findByName($permission, $guard);
+        }
+
+        if (! $this->getGuardNames()->contains($permission->guard_name)) {
+            throw GuardDoesNotMatch::create($permission->guard_name, $this->getGuardNames());
+        }
+
+        if (is_string($section)){
+            $section = app(Section::class)->findByName($section, $guard);
+        }
+
+        if (! $this->getGuardNames()->contains($section->guard_name)) {
+            throw GuardDoesNotMatch::create($section->guard_name, $this->getGuardNames());
+        }
+
+//        $sectionTableName = config('permission.table_names.sections');
+//        $permissionTableName = config('permission.table_names.permissions');
+//        $roleTableName = config('permission.table_names.roles');
+//        $pivotTableName = config('permission.table_names.role_has_permissions');
+//
+//        $query = $this->newQuery()->join($sectionTableName, function(JoinClause $join) use ($pivotTableName, $roleTableName){
+//            $join->on("{$roleTableName}.id", '=', "{$pivotTableName}.role_id");
+//        })->join($sectionTableName, function(JoinClause $join) use ($sectionTableName, $pivotTableName){
+//            $join->on("{$sectionTableName}.id", '=', "{$pivotTableName}.section_id");
+//        })->join($permissionTableName, function(JoinClause $join) use ($permissionTableName, $pivotTableName){
+//            $join->on("{$permissionTableName}.id", '=', "{$pivotTableName}.permission_id");
+//        });
+
+//        $pivotTableName = config('permission.table_names.role_has_permissions');
+//
+//        $query = DB::table($pivotTableName)->where([
+//            'permission_id' => $permission->id,
+//            'role_id' => $this->id,
+//            'section_id' => $section->id
+//        ]);
+//
+//
+//
+//        return count($query->get()->all()) > 0;
+
+        return count($this->permissions()->wherePivot('permission_id', '=', $permission->id)->wherePivot('section_id', '=', $section->id)->get()->all()) > 0;
+    }
+}
