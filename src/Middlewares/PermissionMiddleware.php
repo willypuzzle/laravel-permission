@@ -25,7 +25,7 @@ class PermissionMiddleware
                 throw MalformedParameter::create($permissionx);
             }
             $arguments = [];
-            $arguments['section'] = $permission[1];
+            $arguments[] = $permission[1];
             if (Auth::user()->can($permission[0], $arguments)) {
                 return $next($request);
             }

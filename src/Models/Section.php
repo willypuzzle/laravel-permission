@@ -97,6 +97,6 @@ class Section extends Model implements SectionContract
      */
     protected static function getSections(): Collection
     {
-        return app(PermissionRegistrar::class)->getSection();
+        return app(PermissionRegistrar::class)->getSections();
     }
 }

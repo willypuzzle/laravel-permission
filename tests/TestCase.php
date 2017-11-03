@@ -7,6 +7,7 @@ use Idsign\Permission\Contracts\Role;
 use Illuminate\Database\Schema\Blueprint;
 use Idsign\Permission\PermissionRegistrar;
 use Idsign\Permission\Contracts\Permission;
+use Idsign\Permission\Contracts\Section;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Idsign\Permission\PermissionServiceProvider;
 
@@ -115,6 +116,9 @@ abstract class TestCase extends Orchestra
         $app[Permission::class]->create(['name' => 'edit-articles']);
         $app[Permission::class]->create(['name' => 'edit-news']);
         $app[Permission::class]->create(['name' => 'admin-permission', 'guard_name' => 'admin']);
+
+        $app[Section::class]->create(['name' => 'blog']);
+        $app[Section::class]->create(['name' => 'blog', 'guard_name' => 'admin']);
     }
 
     /**

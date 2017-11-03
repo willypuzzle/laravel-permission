@@ -118,27 +118,27 @@ trait HasRoles
         });
     }
 
-    /**
-     * @param string|array|\Idsign\Permission\Contracts\Permission|\Illuminate\Support\Collection $permissions
-     *
-     * @return array
-     */
-    protected function convertToPermissionModels($permissions): array
-    {
-        if ($permissions instanceof Collection) {
-            $permissions = $permissions->toArray();
-        }
-
-        $permissions = array_wrap($permissions);
-
-        return array_map(function ($permission) {
-            if ($permission instanceof Permission) {
-                return $permission;
-            }
-
-            return app(Permission::class)->findByName($permission, $this->getDefaultGuardName());
-        }, $permissions);
-    }
+//    /**
+//     * @param string|array|\Idsign\Permission\Contracts\Permission|\Illuminate\Support\Collection $permissions
+//     *
+//     * @return array
+//     */
+//    protected function convertToPermissionModels($permissions): array
+//    {
+//        if ($permissions instanceof Collection) {
+//            $permissions = $permissions->toArray();
+//        }
+//
+//        $permissions = array_wrap($permissions);
+//
+//        return array_map(function ($permission) {
+//            if ($permission instanceof Permission) {
+//                return $permission;
+//            }
+//
+//            return app(Permission::class)->findByName($permission, $this->getDefaultGuardName());
+//        }, $permissions);
+//    }
 
 //    /**
 //     * Scope the model query to certain permissions only.
@@ -364,7 +364,7 @@ trait HasRoles
             }
         }
 
-        return $this->hasRole($permission->roles()->wherePivot('section_id', '=', $section->id)->get());
+        return $this->hasRole($permission->roles()->wherePivot('section_id', '=', $section->id)->get());;
     }
 
     /**
@@ -393,7 +393,7 @@ trait HasRoles
             }
         }
 
-        return count($this->permissions()->wherePivot('section_id', '=', $section->id)->get()->all()) > 0;
+        return $this->permissions()->wherePivot('section_id', '=', $section->id)->get()->count() > 0;
     }
 
     /**

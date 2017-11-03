@@ -25,9 +25,10 @@ class BladeTest extends TestCase
     {
         $permission = 'edit-articles';
         $role = 'writer';
+        $section = 'blog';
         $roles = [$role];
 
-        $this->assertEquals('does not have permission', $this->renderView('can', ['permission' => $permission]));
+        $this->assertEquals('does not have permission', $this->renderView('can', ['permission' => $permission, 'arguments' => [$section]]));
         $this->assertEquals('does not have role', $this->renderView('role', [$role]));
         $this->assertEquals('does not have role', $this->renderView('hasRole', [$role]));
         $this->assertEquals('does not have all of the given roles', $this->renderView('hasAllRoles', $roles));
@@ -41,11 +42,12 @@ class BladeTest extends TestCase
     {
         $permission = 'edit-articles';
         $role = 'writer';
+        $section = 'blog';
         $roles = 'writer';
 
         auth()->setUser($this->testUser);
 
-        $this->assertEquals('does not have permission', $this->renderView('can', ['permission' => $permission]));
+        $this->assertEquals('does not have permission', $this->renderView('can', ['permission' => $permission, 'arguments' => [$section]]));
         $this->assertEquals('does not have role', $this->renderView('role', compact('role')));
         $this->assertEquals('does not have role', $this->renderView('hasRole', compact('role')));
         $this->assertEquals('does not have all of the given roles', $this->renderView('hasAllRoles', compact('roles')));
@@ -57,11 +59,14 @@ class BladeTest extends TestCase
     {
         $permission = 'edit-articles';
         $role = 'writer';
+        $section = 'blog';
         $roles = 'writer';
+
+        $arguments = [$section];
 
         auth('admin')->setUser($this->testAdmin);
 
-        $this->assertEquals('does not have permission', $this->renderView('can', compact('permission')));
+        $this->assertEquals('does not have permission', $this->renderView('can', compact('permission', 'arguments')));
         $this->assertEquals('does not have role', $this->renderView('role', compact('role')));
         $this->assertEquals('does not have role', $this->renderView('hasRole', compact('role')));
         $this->assertEquals('does not have all of the given roles', $this->renderView('hasAllRoles', compact('roles')));
@@ -74,11 +79,11 @@ class BladeTest extends TestCase
     {
         $user = $this->getWriter();
 
-        $user->givePermissionTo('edit-articles');
+        $user->givePermissionTo('edit-articles', 'blog');
 
         auth()->setUser($user);
 
-        $this->assertEquals('has permission', $this->renderView('can', ['permission' => 'edit-articles']));
+        $this->assertEquals('has permission', $this->renderView('can', ['permission' => 'edit-articles', 'arguments' => ['blog']]));
     }
 
     /** @test */

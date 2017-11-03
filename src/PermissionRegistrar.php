@@ -3,6 +3,7 @@
 namespace Idsign\Permission;
 
 use Idsign\Permission\Contracts\Section;
+use Idsign\Permission\Exceptions\SectionDoesNotExist;
 use Illuminate\Support\Collection;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Cache\Repository;
@@ -35,9 +36,12 @@ class PermissionRegistrar
         $this->gate->before(function (Authenticatable $user, string $ability, array $arguments) {
             try {
                 if (method_exists($user, 'hasPermissionTo')) {
-                    return $user->hasPermissionTo($ability, $arguments['section']) ?: null;
+                    return $user->hasPermissionTo($ability, $arguments[0]) ?: null;
                 }
             } catch (PermissionDoesNotExist $e) {
+                return false;
+            } catch (SectionDoesNotExist $e) {
+                return false;
             }
         });
 
