@@ -374,6 +374,9 @@ All these responses are collections of `Idsign\Permission\Models\Permission` obj
 If we follow the previous example, the first response will be a collection with the `delete article` permission and 
 the second will be a collection with the `edit article` permission and the third will contain both.
 
+### Get Permissions' tree of a user
+It could be useful to get the permission tree (permission divided by sections) of a certain user. In order to do this you can use the method $user->getPermissionsTree() of HasRole trait.
+
 ### Using Blade directives
 This package also adds Blade directives to verify whether the currently logged in user has all or any of a given list of roles. 
 

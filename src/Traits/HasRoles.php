@@ -493,4 +493,28 @@ trait HasRoles
 
         return explode('|', trim($pipeString, $quoteCharacter));
     }
+
+    public function getPermissionsTree() : array
+    {
+        $sections = app(Section::class)->where([
+            'guard_name' => $this->getDefaultGuardName()
+        ])->get();
+
+        $result = [];
+        foreach ($sections as $section){
+            $result[$section->name] = $this->parseCollectionForPermissionTree($this->getAllPermissions($section));
+        }
+
+        return $result;
+    }
+
+    private function parseCollectionForPermissionTree(Collection $collection) : array
+    {
+        $result = [];
+        foreach ($collection as $c){
+            $result[$c->name] = $c->toArray();
+        }
+
+        return $result;
+    }
 }
