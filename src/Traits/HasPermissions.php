@@ -26,7 +26,7 @@ trait HasPermissions
             $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
         }
 
-        $permissions = collect($permissions)
+        $permissions = collect([$permissions])
             ->flatten()
             ->map(function ($permission) {
                 return $this->getStoredPermission($permission);
@@ -36,7 +36,9 @@ trait HasPermissions
             })
             ->all();
 
-        $this->permissions()->saveMany($permissions, ['section_id' => $section->id]);
+        foreach($permissions as $permission){
+            $this->permissions()->save($permission, ['section_id' => $section->id]);
+        }
 
         $this->forgetCachedPermissions();
 
@@ -82,7 +84,7 @@ trait HasPermissions
     /**
      * @param string|array|\Idsign\Permission\Contracts\Permission|\Illuminate\Support\Collection $permissions
      *
-     * @return \Idsign\Permission\Contracts\Permission|Collection
+     * @return \Idsign\Permission\Contracts\Permission|Collection|\Idsign\Permission\Contracts\Permission
      */
     protected function getStoredPermission($permissions)
     {

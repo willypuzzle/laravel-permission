@@ -33,9 +33,9 @@ class PermissionTest extends TestCase
     /** @test */
     public function it_has_user_models_of_the_right_class()
     {
-        $this->testAdmin->givePermissionTo($this->testAdminPermission);
+        $this->testAdmin->givePermissionTo($this->testAdminPermission, $this->testAdminSection);
 
-        $this->testUser->givePermissionTo($this->testUserPermission);
+        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection);
 
         $this->assertCount(1, $this->testUserPermission->users);
         $this->assertTrue($this->testUserPermission->users->first()->is($this->testUser));

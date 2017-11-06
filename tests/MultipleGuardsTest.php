@@ -3,6 +3,7 @@
 namespace Idsign\Permission\Test;
 
 use Idsign\Permission\Models\Permission;
+use Idsign\Permission\Models\Section;
 
 class MultipleGuardsTest extends TestCase
 {
@@ -12,15 +13,21 @@ class MultipleGuardsTest extends TestCase
         $this->testUser->givePermissionTo(Permission::create([
             'name' => 'do_this',
             'guard_name' => 'web',
+        ]),Section::create([
+            'name' => 'section1',
+            'guard_name' => 'web'
         ]));
 
         $this->testUser->givePermissionTo(Permission::create([
             'name' => 'do_that',
             'guard_name' => 'api',
+        ]),Section::create([
+            'name' => 'section2',
+            'guard_name' => 'api'
         ]));
 
-        $this->assertTrue($this->testUser->hasPermissionTo('do_this', 'web'));
-        $this->assertTrue($this->testUser->hasPermissionTo('do_that', 'api'));
+        $this->assertTrue($this->testUser->hasPermissionTo('do_this', 'section1','web'));
+        $this->assertTrue($this->testUser->hasPermissionTo('do_that', 'section2','api'));
     }
 
     protected function getEnvironmentSetUp($app)

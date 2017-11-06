@@ -393,7 +393,7 @@ trait HasRoles
             }
         }
 
-        return $this->permissions()->wherePivot('section_id', '=', $section->id)->get()->count() > 0;
+        return $this->permissions()->wherePivot('permission_id', '=', $permission->id)->wherePivot('section_id', '=', $section->id)->get()->count() > 0;
     }
 
     /**

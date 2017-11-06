@@ -103,7 +103,7 @@ class MiddlewareTest extends TestCase
     {
         $this->assertEquals(
             $this->runMiddleware(
-                $this->permissionMiddleware, 'edit-articles'
+                $this->permissionMiddleware, 'edit-articles:blog'
             ), 403);
     }
 
@@ -112,11 +112,11 @@ class MiddlewareTest extends TestCase
     {
         Auth::login($this->testUser);
 
-        $this->testUser->givePermissionTo('edit-articles');
+        $this->testUser->givePermissionTo('edit-articles', 'blog');
 
         $this->assertEquals(
             $this->runMiddleware(
-                $this->permissionMiddleware, 'edit-articles'
+                $this->permissionMiddleware, 'edit-articles:blog'
             ), 200);
     }
 
@@ -125,16 +125,16 @@ class MiddlewareTest extends TestCase
     {
         Auth::login($this->testUser);
 
-        $this->testUser->givePermissionTo('edit-articles');
+        $this->testUser->givePermissionTo('edit-articles', 'blog');
 
         $this->assertEquals(
             $this->runMiddleware(
-                $this->permissionMiddleware, 'edit-news|edit-articles'
+                $this->permissionMiddleware, 'edit-news:blog|edit-articles:blog'
             ), 200);
 
         $this->assertEquals(
             $this->runMiddleware(
-                $this->permissionMiddleware, ['edit-news', 'edit-articles']
+                $this->permissionMiddleware, ['edit-news:blog', 'edit-articles:blog']
             ), 200);
     }
 
@@ -143,11 +143,11 @@ class MiddlewareTest extends TestCase
     {
         Auth::login($this->testUser);
 
-        $this->testUser->givePermissionTo('edit-articles');
+        $this->testUser->givePermissionTo('edit-articles', 'blog');
 
         $this->assertEquals(
             $this->runMiddleware(
-                $this->permissionMiddleware, 'edit-news'
+                $this->permissionMiddleware, 'edit-news:blog'
             ), 403);
     }
 
@@ -158,7 +158,7 @@ class MiddlewareTest extends TestCase
 
         $this->assertEquals(
             $this->runMiddleware(
-                $this->permissionMiddleware, 'edit-articles|edit-news'
+                $this->permissionMiddleware, 'edit-articles:blog|edit-news:blog'
             ), 403);
     }
 

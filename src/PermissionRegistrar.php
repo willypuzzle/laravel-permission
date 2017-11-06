@@ -3,6 +3,7 @@
 namespace Idsign\Permission;
 
 use Idsign\Permission\Contracts\Section;
+use Idsign\Permission\Exceptions\MalformedArguments;
 use Idsign\Permission\Exceptions\SectionDoesNotExist;
 use Illuminate\Support\Collection;
 use Illuminate\Contracts\Auth\Access\Gate;
@@ -36,12 +37,15 @@ class PermissionRegistrar
         $this->gate->before(function (Authenticatable $user, string $ability, array $arguments) {
             try {
                 if (method_exists($user, 'hasPermissionTo')) {
+                    if(count($arguments) != 1){
+                        throw MalformedArguments::create($arguments);
+                    }
                     return $user->hasPermissionTo($ability, $arguments[0]) ?: null;
                 }
             } catch (PermissionDoesNotExist $e) {
-                return false;
+                return null;
             } catch (SectionDoesNotExist $e) {
-                return false;
+                return null;
             }
         });
 
