@@ -534,6 +534,8 @@ public function __construct()
 }
 ```
 
+You can protect crud routes with \Idsign\Permission\Middlewares\CrudMiddleware, see config file for more informations.
+
 ### Catching role and permission failures
 If you want to override the default `403` response, you can catch the `UnauthorizedException` using your app's exception handler:
 
