@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 interface Role
 {
+    const ENABLED = 1;
+    const DISABLED = 0;
+    const ALL_STATES  = [ self::DISABLED, self::ENABLED ];
+
     /**
      * A role may be given various permissions.
      *

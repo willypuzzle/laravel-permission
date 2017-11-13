@@ -13,25 +13,29 @@ class CreatePermissionTables extends Migration
     public function up()
     {
         $tableNames = config('permission.table_names');
+        $defaultState = 1;
 
-        Schema::create($tableNames['permissions'], function (Blueprint $table) {
+        Schema::create($tableNames['permissions'], function (Blueprint $table) use ($defaultState){
             $table->increments('id');
             $table->string('name');
             $table->string('guard_name');
+            $table->integer('state')->default($defaultState)->comment('0 = disabled, 1 = enabled');
             $table->timestamps();
         });
 
-        Schema::create($tableNames['roles'], function (Blueprint $table) {
+        Schema::create($tableNames['roles'], function (Blueprint $table) use ($defaultState) {
             $table->increments('id');
             $table->string('name');
             $table->string('guard_name');
+            $table->integer('state')->default($defaultState)->comment('0 = disabled, 1 = enabled');
             $table->timestamps();
         });
 
-        Schema::create($tableNames['sections'], function (Blueprint $table){
+        Schema::create($tableNames['sections'], function (Blueprint $table) use ($defaultState){
             $table->increments('id');
             $table->string('name');
             $table->string('guard_name');
+            $table->integer('state')->default($defaultState)->comment('0 = disabled, 1 = enabled');
             $table->timestamps();
         });
 

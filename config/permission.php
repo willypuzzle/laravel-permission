@@ -1,6 +1,25 @@
 <?php
 
 return [
+    /* You can set user parameters as you wish.
+     *
+     */
+    'user' => [
+        'state' => [
+            /*
+             * You can set the name of the state field
+             */
+            'field_name' => 'state',
+            /*
+             * You can set enabled/disabled values for the user and the default value in case of not both matching.
+             */
+            'values' => [
+                'disabled' => [0],
+                'enabled' => [1],
+                'default' => false //if any of the above values is catched this will be the result of isEnabled function
+            ]
+        ]
+    ],
 
     'models' => [
 

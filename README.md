@@ -554,6 +554,13 @@ public function render($request, Exception $exception)
 
 ```
 
+## State Management
+
+### User
+
+You can set parameters for user state manage (see config for more information). You can call isEnabled method (of HasRole trait) to check if a user is enabled.
+If a User is disabled it couldn't be allowed to enter in any section for any role or permission. 
+
 ## Using artisan commands
 
 You can create a role or permission from a console with artisan commands.
