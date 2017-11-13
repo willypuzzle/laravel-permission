@@ -559,7 +559,12 @@ public function render($request, Exception $exception)
 ### User
 
 You can set parameters for user state manage (see config for more information). You can call isEnabled method (of HasRole trait) to check if a user is enabled.
-If a User is disabled it couldn't be allowed to enter in any section for any role or permission. 
+If a User is disabled it couldn't be allowed to enter in any section for any role or permission.
+
+State management is even for roles and permission, you have to set the state field in the database, use constant in Role and Permission contracts to retrieve the value.
+
+When state is disabled in permission any request will be not allowed in that permission for every user that is linked at that permission.
+When state is disable in role any request on permission linked to that role will be not allowed.
 
 ## Using artisan commands
 
