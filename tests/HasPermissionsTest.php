@@ -2,6 +2,8 @@
 
 namespace Idsign\Permission\Test;
 
+use Idsign\Permission\Contracts\Permission;
+use Idsign\Permission\Contracts\Role;
 use Idsign\Permission\Exceptions\GuardDoesNotMatch;
 use Idsign\Permission\Exceptions\PermissionDoesNotExist;
 
@@ -15,6 +17,72 @@ class HasPermissionsTest extends TestCase
         $this->refreshTestUser();
 
         $this->assertTrue($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+    }
+
+    /** @test */
+    public function it_doesnt_allow_a_permission_to_a_user_when_user_is_disabled()
+    {
+        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection);
+
+        $stateField = config('permission.user.state.field_name');
+
+        $this->testUser->$stateField = config('permission.user.state.values.disabled')[0];
+
+        $this->testUser->save();
+
+        $this->refreshTestUser();
+
+        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+    }
+
+    /** @test */
+    public function it_doesnt_allow_a_permission_to_a_user_when_role_is_disabled()
+    {
+        $this->testUserRole->givePermissionTo($this->testUserPermission, $this->testUserSection);
+
+        $this->testUserRole->state = Role::DISABLED;
+
+        $this->testUserRole->save();
+
+        $this->testUser->syncRoles($this->testUserRole);
+
+        $this->testUser->save();
+
+        $this->refreshTestUser();
+
+        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+    }
+
+    /** @test */
+    public function it_doesnt_allow_a_permission_to_a_user_when_permission_is_disabled_via_role()
+    {
+        $this->testUserPermission->state = Permission::DISABLED;
+
+        $this->testUserPermission->save();
+
+        $this->testUserRole->givePermissionTo($this->testUserPermission, $this->testUserSection);
+
+        $this->testUser->syncRoles($this->testUserRole);
+
+        $this->testUser->save();
+
+        $this->refreshTestUser();
+
+        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+    }
+
+    /** @test */
+    public function it_doesnt_allow_a_permission_to_a_user_when_permission_is_disabled_via_permission()
+    {
+        $this->testUserPermission->state = Permission::DISABLED;
+
+        $this->testUserPermission->save();
+
+        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection);
+
+        $this->refreshTestUser();
+
+        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
     }
 
     /** @test */

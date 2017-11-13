@@ -293,7 +293,7 @@ class HasRolesTest extends TestCase
 
         $this->assertTrue($this->testUser->hasAnyRole(['testRole', 'testAdminRole']));
 
-        $this->assertFalse($this->testUser->hasAnyRole('testAdminRole', $this->testAdminRole));
+        $this->assertFalse($this->testUser->hasAnyRole(['testAdminRole', $this->testAdminRole]));
     }
 
     /** @test */

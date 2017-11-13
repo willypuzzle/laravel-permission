@@ -7,6 +7,7 @@ use Idsign\Permission\Contracts\{
     Role,
     Section
 };
+use Idsign\Permission\Exceptions\RoleDoesNotExist;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -31,7 +32,7 @@ trait HasRoles
     {
         $fieldName = config('permission.user.state.field_name');
 
-        if($fieldName){
+        if($fieldName && isset($this->attributes[$fieldName])){
             $enabledValues = config('permission.user.state.values.enabled') ?? [];
             $disabledValues = config('permission.user.state.values.disabled') ?? [];
             $value = $this->attributes[$fieldName];
@@ -263,16 +264,24 @@ trait HasRoles
         }
 
         if (is_string($roles)) {
-            if($checkEnabled){
-                return $this->roles()->where('state', Role::ENABLED)->get()->contains('name', $roles);
-            }else{
-                return $this->roles->contains('name', $roles);
+            try{
+                $roles = app(Role::class)->findByName(
+                    $roles,
+                    $guardName ?? $this->getDefaultGuardName()
+                );
+            }catch (RoleDoesNotExist $ex){
+                return false;
             }
         }
 
         if ($roles instanceof Role) {
             if($checkEnabled){
-                return $this->roles()->where('state', Role::ENABLED)->get()->contains('id', $roles->id);
+                $set = $this->roles()->where([
+                    'state' => Role::ENABLED,
+                    'id' => $roles->id
+                ])->get();
+
+                return $set->count() > 0;
             }else{
                 return $this->roles->contains('id', $roles->id);
             }
@@ -291,7 +300,7 @@ trait HasRoles
         if(!$checkEnabled){
             return $roles->intersect($this->roles)->isNotEmpty();
         }else{
-            return $roles->intersect($this->roles()->where('state', Role::ENABLED)->get())->isNotEmpty();
+            return $roles->intersect($this->roles()->where(['state' => Role::ENABLED])->get())->isNotEmpty();
         }
 
     }
@@ -359,6 +368,10 @@ trait HasRoles
      */
     public function hasPermissionTo($permission, $section, $guardName = null, $checkEnabled = true): bool
     {
+        if(!$this->isEnabled()){
+            return false;
+        }
+
         if (is_string($permission)) {
             $permission = app(Permission::class)->findByName(
                 $permission,
@@ -373,6 +386,8 @@ trait HasRoles
             );
         }
 
+
+
         return $this->hasDirectPermission($permission, $section, $checkEnabled) || $this->hasPermissionViaRole($permission, $section, $checkEnabled);
     }
 
@@ -385,6 +400,10 @@ trait HasRoles
      */
     public function hasAnyPermission(array $permissions, string $section, $checkEnabled = true): bool
     {
+        if(!$this->isEnabled()){
+            return false;
+        }
+
         foreach ($permissions as $permission) {
             if ($this->hasPermissionTo($permission, $section, $checkEnabled)) {
                 return true;
@@ -403,6 +422,14 @@ trait HasRoles
      */
     protected function hasPermissionViaRole(Permission $permission, $section, $checkEnabled = true): bool
     {
+        if(!$this->isEnabled()){
+            return false;
+        }
+
+        if($permission->state != Permission::ENABLED){
+            return false;
+        }
+
         if (is_string($section)) {
             $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
 
@@ -411,7 +438,11 @@ trait HasRoles
             }
         }
 
-        return $this->hasRole($permission->roles()->wherePivot('section_id', '=', $section->id)->get(), $checkEnabled);
+        if($checkEnabled){
+            return $this->hasRole($permission->roles()->where('state', Role::ENABLED)->wherePivot('section_id', '=', $section->id)->get(), $checkEnabled);
+        }else{
+            return $this->hasRole($permission->roles()->wherePivot('section_id', '=', $section->id)->get(), $checkEnabled);
+        }
     }
 
     /**
@@ -424,6 +455,10 @@ trait HasRoles
      */
     public function hasDirectPermission($permission, $section, $checkEnabled = true): bool
     {
+        if(!$this->isEnabled()){
+            return false;
+        }
+
         if (is_string($permission)) {
             $permission = app(Permission::class)->findByName($permission, $this->getDefaultGuardName());
 
@@ -445,7 +480,7 @@ trait HasRoles
                         ->wherePivot('section_id', '=', $section->id)
                         ->first();
 
-        return $permission && $checkEnabled ? $permission->state == Permission::ENABLED : true;
+        return ($permission !== NULL) && ($checkEnabled ? $permission->state == Permission::ENABLED : true);
     }
 
     /**

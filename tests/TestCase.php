@@ -104,12 +104,14 @@ abstract class TestCase extends Orchestra
         $app['db']->connection()->getSchemaBuilder()->create('users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('email');
+            $table->integer('state')->default(1)->comment('0 = disabled, 1 = enabled');
             $table->softDeletes();
         });
 
         $app['db']->connection()->getSchemaBuilder()->create('admins', function (Blueprint $table) {
             $table->increments('id');
             $table->string('email');
+            $table->integer('state')->default(1)->comment('0 = disabled, 1 = enabled');
         });
 
         include_once __DIR__.'/../database/migrations/create_permission_tables.php.stub';
