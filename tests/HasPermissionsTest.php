@@ -4,6 +4,7 @@ namespace Idsign\Permission\Test;
 
 use Idsign\Permission\Contracts\Permission;
 use Idsign\Permission\Contracts\Role;
+use Idsign\Permission\Contracts\Section;
 use Idsign\Permission\Exceptions\GuardDoesNotMatch;
 use Idsign\Permission\Exceptions\PermissionDoesNotExist;
 
@@ -79,6 +80,20 @@ class HasPermissionsTest extends TestCase
         $this->testUserPermission->save();
 
         $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection);
+
+        $this->refreshTestUser();
+
+        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+    }
+
+    /** @test */
+    public function it_doesnt_allow_a_permission_to_a_user_when_section_is_disabled()
+    {
+        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection);
+
+        $this->testUserSection->state = Section::DISABLED;
+
+        $this->testUserSection->save();
 
         $this->refreshTestUser();
 

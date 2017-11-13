@@ -368,7 +368,7 @@ trait HasRoles
      */
     public function hasPermissionTo($permission, $section, $guardName = null, $checkEnabled = true): bool
     {
-        if(!$this->isEnabled()){
+        if($checkEnabled && !$this->isEnabled()){
             return false;
         }
 
@@ -386,6 +386,10 @@ trait HasRoles
             );
         }
 
+        if($checkEnabled && $section->state != Section::ENABLED){
+            return false;
+        }
+
 
 
         return $this->hasDirectPermission($permission, $section, $checkEnabled) || $this->hasPermissionViaRole($permission, $section, $checkEnabled);
@@ -400,10 +404,6 @@ trait HasRoles
      */
     public function hasAnyPermission(array $permissions, string $section, $checkEnabled = true): bool
     {
-        if(!$this->isEnabled()){
-            return false;
-        }
-
         foreach ($permissions as $permission) {
             if ($this->hasPermissionTo($permission, $section, $checkEnabled)) {
                 return true;
@@ -422,11 +422,11 @@ trait HasRoles
      */
     protected function hasPermissionViaRole(Permission $permission, $section, $checkEnabled = true): bool
     {
-        if(!$this->isEnabled()){
+        if($checkEnabled && !$this->isEnabled()){
             return false;
         }
 
-        if($permission->state != Permission::ENABLED){
+        if($checkEnabled && $permission->state != Permission::ENABLED){
             return false;
         }
 
@@ -436,6 +436,10 @@ trait HasRoles
             if (! $section) {
                 return false;
             }
+        }
+
+        if($checkEnabled && $section->state != Section::ENABLED){
+            return false;
         }
 
         if($checkEnabled){
@@ -475,6 +479,10 @@ trait HasRoles
             }
         }
 
+        if($checkEnabled && $section->state != Section::ENABLED){
+            return false;
+        }
+
         $permission = $this->permissions()
                         ->wherePivot('permission_id', '=', $permission->id)
                         ->wherePivot('section_id', '=', $section->id)
@@ -492,6 +500,10 @@ trait HasRoles
     {
         if (is_string($section)) {
             $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
+        }
+
+        if($checkEnabled && (!$this->isEnabled() || $section->state != Section::ENABLED)){
+            return collect([]);
         }
 
         if($checkEnabled){
@@ -531,6 +543,10 @@ trait HasRoles
             $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
         }
 
+        if($checkEnabled && (!$this->isEnabled() || $section->state != Section::ENABLED)){
+            return collect([]);
+        }
+
         return $this->load('roles', 'roles.permissions')
             ->roles->filter(function ($role) use ($checkEnabled){
                 return $checkEnabled ? $role->state == Role::ENABLED : true;
@@ -558,6 +574,10 @@ trait HasRoles
 
     public function getRoleNames($checkEnabled = true): Collection
     {
+        if($checkEnabled && !$this->isEnabled()){
+            return collect([]);
+        }
+
         if($checkEnabled){
             return $this->roles()->where('state', Role::ENABLED)->pluck('name');
         }else{
@@ -598,6 +618,10 @@ trait HasRoles
 
     public function getPermissionsTree($checkEnabled = true) : array
     {
+        if($checkEnabled && !$this->isEnabled()){
+            return [];
+        }
+
         if($checkEnabled){
             $sections = app(Section::class)->where([
                 'guard_name' => $this->getDefaultGuardName(),

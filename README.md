@@ -565,6 +565,7 @@ State management is even for roles and permission, you have to set the state fie
 
 When state is disabled in permission any request will be not allowed in that permission for every user that is linked at that permission.
 When state is disable in role any request on permission linked to that role will be not allowed.
+The same is for the sections.
 
 ## Using artisan commands
 
