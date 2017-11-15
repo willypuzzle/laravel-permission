@@ -85,7 +85,7 @@ trait HasRoles
         return $this->morphToMany(
             config('permission.models.section'),
             'model',
-            config('permission.table_names.model_has_roles'),
+            config('permission.table_names.role_has_permissions'),
             'model_id',
             'section_id'
         );
