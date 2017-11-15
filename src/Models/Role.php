@@ -31,6 +31,20 @@ class Role extends Model implements RoleContract
         $this->setTable(config('permission.table_names.roles'));
     }
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($model) {
+            if (method_exists($model, 'isForceDeleting') && ! $model->isForceDeleting()) {
+                return;
+            }
+
+            $model->users()->detach();
+            $model->permissions()->detach();
+        });
+    }
+
     public static function create(array $attributes = [])
     {
         $attributes['guard_name'] = $attributes['guard_name'] ?? config('auth.defaults.guard');
@@ -151,5 +165,9 @@ class Role extends Model implements RoleContract
 //        return count($query->get()->all()) > 0;
 
         return count($this->permissions()->wherePivot('permission_id', '=', $permission->id)->wherePivot('section_id', '=', $section->id)->get()->all()) > 0;
+    }
+
+    protected function isForceDeleting(){
+        return true;
     }
 }

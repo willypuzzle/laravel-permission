@@ -7,6 +7,8 @@ use Idsign\Permission\Models\Permission;
 use Idsign\Permission\Exceptions\GuardDoesNotMatch;
 use Idsign\Permission\Exceptions\RoleAlreadyExists;
 use Idsign\Permission\Exceptions\PermissionDoesNotExist;
+use Idsign\Permission\Models\Section;
+use Illuminate\Support\Facades\DB;
 
 class RoleTest extends TestCase
 {
@@ -202,5 +204,29 @@ class RoleTest extends TestCase
     public function it_belongs_to_the_default_guard_by_default()
     {
         $this->assertEquals($this->app['config']->get('auth.defaults.guard'), $this->testUserRole->guard_name);
+    }
+
+    /** @test */
+    public function test_if_model_detach_on_delete_works()
+    {
+        $role = new \Idsign\Permission\Models\Role(['name' => 'john']);
+        $role->save();
+
+        $permission = new Permission(['name' => 'Luke']);
+        $permission->save();
+
+        $section = new Section(['name' => 'bio']);
+        $section->save();
+
+        $this->testUser->assignRole($role);
+        $role->givePermissionTo($permission, $section);
+
+        $roleId = $role->id;
+
+        $role->delete();
+
+        $this->assertCount(0, DB::table(config('permission.table_names.role_has_permissions'))->where('role_id', $roleId)->get());
+        $this->assertCount(0, DB::table(config('permission.table_names.model_has_roles'))->where('role_id', $roleId)->get());
+
     }
 }

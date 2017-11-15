@@ -27,6 +27,20 @@ class Permission extends Model implements PermissionContract
         $this->setTable(config('permission.table_names.permissions'));
     }
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($model) {
+            if (method_exists($model, 'isForceDeleting') && ! $model->isForceDeleting()) {
+                return;
+            }
+
+            $model->roles()->detach();
+            $model->users()->detach();
+        });
+    }
+
     public static function create(array $attributes = [])
     {
         $attributes['guard_name'] = $attributes['guard_name'] ?? config('auth.defaults.guard');
@@ -96,5 +110,9 @@ class Permission extends Model implements PermissionContract
     protected static function getPermissions(): Collection
     {
         return app(PermissionRegistrar::class)->getPermissions();
+    }
+
+    protected function isForceDeleting(){
+        return true;
     }
 }

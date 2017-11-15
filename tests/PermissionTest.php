@@ -7,6 +7,7 @@ use Idsign\Permission\Exceptions\PermissionAlreadyExists;
 use Idsign\Permission\Models\Section as SectionModel;
 use Idsign\Permission\Models\Permission as PermissionModel;
 use Idsign\Permission\Models\Role as RoleModel;
+use Illuminate\Support\Facades\DB;
 
 class PermissionTest extends TestCase
 {
@@ -109,5 +110,26 @@ class PermissionTest extends TestCase
 
         $this->assertFalse(isset($tree['section3']['cross-permission-sec2_4']));
         $this->assertFalse(isset($tree['section1']['permission2']));
+    }
+
+    /** @test */
+    public function test_if_model_detach_on_delete_works()
+    {
+        $permission = new PermissionModel(['name' => 'john']);
+        $permission->save();
+
+        $section = new SectionModel(['name' => 'bio']);
+        $section->save();
+
+        $this->testUser->givePermissionTo($permission,$section);
+        $this->testUserRole->givePermissionTo($permission, $section);
+
+        $permissionId = $permission->id;
+
+        $permission->delete();
+
+        $this->assertCount(0, DB::table(config('permission.table_names.role_has_permissions'))->where('permission_id', $permissionId)->get());
+        $this->assertCount(0, DB::table(config('permission.table_names.model_has_permissions'))->where('permission_id', $permissionId)->get());
+
     }
 }

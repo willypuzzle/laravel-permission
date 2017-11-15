@@ -10,6 +10,7 @@ use Idsign\Permission\Exceptions\SectionDoesNotExist;
 use Idsign\Permission\Exceptions\SectionAlreadyExists;
 use Idsign\Permission\Contracts\Section as SectionContract;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Section extends Model implements SectionContract
 {
@@ -24,6 +25,24 @@ class Section extends Model implements SectionContract
         parent::__construct($attributes);
 
         $this->setTable(config('permission.table_names.sections'));
+    }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($model) {
+            if (method_exists($model, 'isForceDeleting') && ! $model->isForceDeleting()) {
+                return;
+            }
+
+            $model->users_from_roles()->detach();
+            $model->users_from_permissions()->detach();
+
+            $model->roles()->detach();
+            $model->permissions_from_roles()->detach();
+            $model->permissions_from_users()->detach();
+        });
     }
 
     public static function create(array $attributes = [])
@@ -70,6 +89,39 @@ class Section extends Model implements SectionContract
     }
 
     /**
+     * A permission can be applied to roles.
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            config('permission.models.role'),
+            config('permission.table_names.role_has_permissions')
+        );
+    }
+
+    /**
+     * A role may be given various permissions.
+     */
+    public function permissions_from_roles(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            config('permission.models.permission'),
+            config('permission.table_names.role_has_permissions')
+        );
+    }
+
+    /**
+     * A role may be given various permissions.
+     */
+    public function permissions_from_users(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            config('permission.models.permission'),
+            config('permission.table_names.model_has_permissions')
+        );
+    }
+
+    /**
      * Find a permission by its name (and optionally guardName).
      *
      * @param string $name
@@ -98,5 +150,9 @@ class Section extends Model implements SectionContract
     protected static function getSections(): Collection
     {
         return app(PermissionRegistrar::class)->getSections();
+    }
+
+    protected function isForceDeleting(){
+        return true;
     }
 }
