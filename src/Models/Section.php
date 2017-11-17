@@ -62,12 +62,9 @@ class Section extends Model implements SectionContract
 
     public function users_from_roles(): MorphToMany
     {
-        return $this->morphedByMany(
+        return $this->belongsToMany(
             getModelForGuard($this->attributes['guard_name']),
-            'model',
-            config('permission.table_names.role_has_permissions'),
-            'section_id',
-            'model_id'
+            config('permission.table_names.role_has_permissions')
         );
     }
 
