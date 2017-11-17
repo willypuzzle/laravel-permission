@@ -60,23 +60,17 @@ class Section extends Model implements SectionContract
         return static::query()->create($attributes);
     }
 
-    /**
-     * A role belongs to some users of the model associated with its guard related to roles.
-     */
     public function users_from_roles(): MorphToMany
     {
         return $this->morphedByMany(
             getModelForGuard($this->attributes['guard_name']),
             'model',
-            config('permission.table_names.model_has_roles'),
+            config('permission.table_names.role_has_permissions'),
             'section_id',
             'model_id'
         );
     }
 
-    /**
-     * A role belongs to some users of the model associated with its guard related to roles.
-     */
     public function users_from_permissions(): MorphToMany
     {
         return $this->morphedByMany(
