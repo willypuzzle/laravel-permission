@@ -60,7 +60,7 @@ class Section extends Model implements SectionContract
         return static::query()->create($attributes);
     }
 
-    public function users_from_roles(): MorphToMany
+    public function users_from_roles(): BelongsToMany
     {
         return $this->belongsToMany(
             getModelForGuard($this->attributes['guard_name']),
