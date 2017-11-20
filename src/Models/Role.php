@@ -119,7 +119,7 @@ class Role extends Model implements RoleContract
      *
      * @throws \Idsign\Permission\Exceptions\GuardDoesNotMatch
      */
-    public function hasPermissionTo($permission, $section): bool
+    public function hasPermissionTo($permission, $section, $checkEnabled = true): bool
     {
         $guard = $this->getDefaultGuardName();
 
@@ -139,32 +139,16 @@ class Role extends Model implements RoleContract
             throw GuardDoesNotMatch::create($section->guard_name, $this->getGuardNames());
         }
 
-//        $sectionTableName = config('permission.table_names.sections');
-//        $permissionTableName = config('permission.table_names.permissions');
-//        $roleTableName = config('permission.table_names.roles');
-//        $pivotTableName = config('permission.table_names.role_has_permissions');
-//
-//        $query = $this->newQuery()->join($sectionTableName, function(JoinClause $join) use ($pivotTableName, $roleTableName){
-//            $join->on("{$roleTableName}.id", '=', "{$pivotTableName}.role_id");
-//        })->join($sectionTableName, function(JoinClause $join) use ($sectionTableName, $pivotTableName){
-//            $join->on("{$sectionTableName}.id", '=', "{$pivotTableName}.section_id");
-//        })->join($permissionTableName, function(JoinClause $join) use ($permissionTableName, $pivotTableName){
-//            $join->on("{$permissionTableName}.id", '=', "{$pivotTableName}.permission_id");
-//        });
+        if($checkEnabled && $this->state !== RoleContract::ENABLED){
+            return false;
+        }
 
-//        $pivotTableName = config('permission.table_names.role_has_permissions');
-//
-//        $query = DB::table($pivotTableName)->where([
-//            'permission_id' => $permission->id,
-//            'role_id' => $this->id,
-//            'section_id' => $section->id
-//        ]);
-//
-//
-//
-//        return count($query->get()->all()) > 0;
+        if(!$checkEnabled){
+            return count($this->permissions()->wherePivot('permission_id', '=', $permission->id)->wherePivot('section_id', '=', $section->id)->get()->all()) > 0;
+        }else{
+            return count($this->permissions()->where('state', RoleContract::ENABLED)->wherePivot('permission_id', '=', $permission->id)->wherePivot('section_id', '=', $section->id)->get()->all()) > 0;
+        }
 
-        return count($this->permissions()->wherePivot('permission_id', '=', $permission->id)->wherePivot('section_id', '=', $section->id)->get()->all()) > 0;
     }
 
     protected function isForceDeleting(){

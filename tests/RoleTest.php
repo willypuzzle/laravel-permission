@@ -47,7 +47,7 @@ class RoleTest extends TestCase
     {
         $this->testUserRole->givePermissionTo('edit-articles', 'blog');
 
-        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-articles', 'blog'));
+        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-articles', 'blog', false));
     }
 
     /** @test */
@@ -75,8 +75,8 @@ class RoleTest extends TestCase
     {
         $this->testUserRole->givePermissionTo(['edit-articles', 'edit-news'], 'blog');
 
-        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-articles', 'blog'));
-        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-news', 'blog'));
+        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-articles', 'blog', false));
+        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-news', 'blog', false));
     }
 
     /** @test */
@@ -84,8 +84,8 @@ class RoleTest extends TestCase
     {
         $this->testUserRole->givePermissionTo(['edit-articles', 'edit-news'], 'blog');
 
-        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-articles', 'blog'));
-        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-news', 'blog'));
+        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-articles', 'blog', false));
+        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-news', 'blog', false));
     }
 
     /** @test */
@@ -95,9 +95,9 @@ class RoleTest extends TestCase
 
         $this->testUserRole->syncPermissions('edit-news', 'blog');
 
-        $this->assertFalse($this->testUserRole->hasPermissionTo('edit-articles', 'blog'));
+        $this->assertFalse($this->testUserRole->hasPermissionTo('edit-articles', 'blog', false));
 
-        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-news', 'blog'));
+        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-news', 'blog', false));
     }
 
     /** @test */
@@ -143,7 +143,7 @@ class RoleTest extends TestCase
     {
         $this->testUserRole->givePermissionTo('edit-articles', 'blog');
 
-        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-articles', 'blog'));
+        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-articles', 'blog', false));
 
         $this->testUserRole->revokePermissionTo('edit-articles', 'blog');
 
@@ -157,7 +157,7 @@ class RoleTest extends TestCase
     {
         $this->testUserRole->givePermissionTo($this->testUserPermission, $this->testUserSection);
 
-        $this->assertTrue($this->testUserRole->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+        $this->assertTrue($this->testUserRole->hasPermissionTo($this->testUserPermission, $this->testUserSection, false));
     }
 
     /** @test */
