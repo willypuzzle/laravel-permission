@@ -459,7 +459,7 @@ trait HasRoles
      */
     public function hasDirectPermission($permission, $section, $checkEnabled = true): bool
     {
-        if(!$this->isEnabled()){
+        if($checkEnabled && !$this->isEnabled()){
             return false;
         }
 
