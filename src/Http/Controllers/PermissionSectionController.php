@@ -14,6 +14,10 @@ abstract class PermissionSectionController extends Controller
     const SECTION = 'section';
     const PERMISSION = 'permission';
 
+    public function all(){
+        return response()->json(app($this->delta() == self::PERMISSION ? PermissionInterface::class : SectionInterface::class)->newQuery()->get()->toArray());
+    }
+
     public function create(Request $request)
     {
         $this->validate($request, [
