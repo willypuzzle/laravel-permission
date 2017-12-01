@@ -11,6 +11,15 @@ interface Permission
     const ALL_STATES  = [ self::DISABLED, self::ENABLED ];
 
     /**
+     * Canonical permissions
+     */
+    const READ = 'read';
+    const CREATE = 'create';
+    const UPDATE = 'update';
+    const DELETE = 'delete';
+
+
+    /**
      * A permission can be applied to roles.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
