@@ -55,7 +55,11 @@ trait HasPermissions
      */
     public function syncPermissions($permissions, $section)
     {
-        $this->permissions()->detach();
+        if (is_string($section)) {
+            $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
+        }
+
+        $this->permissions()->wherePivot('section_id', '=',$section->id)->detach();
 
         return $this->givePermissionTo($permissions, $section);
     }
