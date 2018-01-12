@@ -7,6 +7,8 @@ use Idsign\Permission\Exceptions\UnauthorizedException;
 
 trait PermissionChecker
 {
+    use UserManagement;
+
     private $section = null;
 
     protected function setSection($section)
@@ -46,5 +48,17 @@ trait PermissionChecker
                 }
             }
         }
+    }
+
+    /**
+     * @param $permissions
+     * @param null $sections
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    protected function checkPermissionForLoggedUser($permissions, $sections = null)
+    {
+        $user = $this->getLoggedUser();
+
+        $this->checkPermission($user, $permissions, $sections);
     }
 }

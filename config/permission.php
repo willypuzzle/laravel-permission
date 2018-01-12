@@ -5,6 +5,12 @@ return [
      *
      */
     'user' => [
+        'model' => [
+            'web' => [
+                'interface' => \Idsign\Permission\Contracts\DefaultUser::class,
+                'model' => \App\Models\User::class
+            ] //models are differentiated by guard
+        ],
         'state' => [
             /*
              * You can set the name of the state field

@@ -24,11 +24,12 @@
         }
     ],
     "require": {
-        "php" : ">=7.0",
+        "php": ">=7.0",
         "illuminate/auth": "~5.3.0|~5.4.0|~5.5.0",
         "illuminate/container": "~5.3.0|~5.4.0|~5.5.0",
         "illuminate/contracts": "~5.3.0|~5.4.0|~5.5.0",
         "illuminate/database": "~5.4.0|~5.5.0",
+        "willypuzzle/laravel-helpers": "^0.1.9",
         "willypuzzle/vuetify-php": "^0.0.3"
     },
     "require-dev": {

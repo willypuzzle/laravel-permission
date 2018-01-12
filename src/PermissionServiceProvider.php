@@ -53,6 +53,12 @@ class PermissionServiceProvider extends ServiceProvider
         $this->app->bind(PermissionContract::class, $config['permission']);
         $this->app->bind(RoleContract::class, $config['role']);
         $this->app->bind(SectionContract::class, $config['section']);
+
+        $userConfigs  = config("permission.user.model");
+
+        foreach ($userConfigs as $userConfig){
+            $this->app->bind($userConfig['interface'], $userConfig['model']);
+        }
     }
 
     protected function registerBladeExtensions()
