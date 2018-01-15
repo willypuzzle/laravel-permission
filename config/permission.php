@@ -7,7 +7,6 @@ return [
     'user' => [
         'model' => [
             'web' => [
-                'interface' => \Idsign\Permission\Contracts\DefaultUser::class,
                 'model' => \App\Models\User::class
             ] //models are differentiated by guard
         ],

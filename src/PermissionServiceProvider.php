@@ -58,7 +58,7 @@ class PermissionServiceProvider extends ServiceProvider
 
         if(is_array($userConfigs)){
             foreach ($userConfigs as $userConfig){
-                $this->app->bind($userConfig['interface'], $userConfig['model']);
+                $this->app->bind($userConfig['model'], $userConfig['model']);
             }
         }
     }
