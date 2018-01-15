@@ -117,7 +117,7 @@ return [
 
     /*
      * These are parameter used by CrudMiddleware where as key we have the final part of the crud route name (for example a route named 'page.store'
-     * where page could be the controller and store is the index in the array, and sa value we have the permission name. You can call the middleware
+     * where page could be the controller and store is the index in the array, and as value we have the permission name. You can call the middleware
      * for example by $this->middleware('crud:blog') where blog is the section. By default other not crud routes are allowed, if you want to not allow
      * other routes use not_nullable option, such as $this->middleware('crud:blog,not_nullable')
      * */
@@ -133,6 +133,12 @@ return [
             'destroy',
             'update'
         ]
+    ],
+
+    'roles' => [
+        'superuser' => 'superuser',
+        'admin' => 'admin',
+        'operator' => 'operator'
     ],
 
     /*
