@@ -10,8 +10,16 @@ use Illuminate\Http\Request;
 
 class MatrixController extends RoleCheckerController
 {
+    /**
+     * @param $sectionId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     * @throws \Illuminate\Auth\AuthenticationException
+     */
     public function roleMatrixInit($sectionId)
     {
+        $this->checkForPermittedRoles();
+
         $guard = $this->usedGuard();
 
         $section = app(Section::class)->where(['id' => $sectionId, 'guard_name' => $guard])->firstOrFail();
@@ -33,8 +41,16 @@ class MatrixController extends RoleCheckerController
         return response()->json($matrix);
     }
 
+    /**
+     * @param Request $request
+     * @param $sectionId
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     * @throws \Illuminate\Auth\AuthenticationException
+     */
     public function roleMatrixUpdate(Request $request, $sectionId)
     {
+        $this->checkForPermittedRoles();
+
         $guard = $this->usedGuard();
 
         $section = app(Section::class)->where(['id' => $sectionId, 'guard_name' => $guard])->firstOrFail();
@@ -79,8 +95,16 @@ class MatrixController extends RoleCheckerController
         }
     }
 
+    /**
+     * @param $sectionId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     * @throws \Illuminate\Auth\AuthenticationException
+     */
     public function userMatrixInit($sectionId)
     {
+        $this->checkForPermittedRoles();
+
         $guard = $this->usedGuard();
 
         $section = app(Section::class)->where(['id' => $sectionId, 'guard_name' => $guard])->firstOrFail();
@@ -103,8 +127,16 @@ class MatrixController extends RoleCheckerController
         return response()->json($matrix);
     }
 
+    /**
+     * @param Request $request
+     * @param $sectionId
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     * @throws \Illuminate\Auth\AuthenticationException
+     */
     public function userMatrixUpdate(Request $request, $sectionId)
     {
+        $this->checkForPermittedRoles();
+
         $guard = $this->usedGuard();
 
         $section = app(Section::class)->where(['id' => $sectionId, 'guard_name' => $guard])->firstOrFail();

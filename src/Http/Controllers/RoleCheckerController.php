@@ -26,7 +26,7 @@ class RoleCheckerController extends Controller
     {
         if(count($this->roles) != 0){
             if (!$this->checkIfLoggeUserHasRole($this->roles)) {
-                throw new AuthenticationException('Wrong or unset role', [$this->usedGuard()]);
+                throw new AuthenticationException('Wrong role', [$this->usedGuard()]);
             }
         }
     }
