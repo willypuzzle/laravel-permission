@@ -31,7 +31,7 @@ abstract class UserController extends RoleCheckerController
         return response()->json($this->getUserModel()::all()->toArray());
     }
 
-    abstract function validateCreation(Request $request);
+    abstract protected function validateCreation(Request $request);
 
     /**
      * @param Request $request
