@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class MatrixController extends RoleCheckerController
 {
+    public function __construct()
+    {
+        $this->addPermittedRoles([config('permission.roles.superuser')]);
+    }
+
     /**
      * @param $sectionId
      * @return \Illuminate\Http\JsonResponse
