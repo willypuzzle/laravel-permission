@@ -34,6 +34,22 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
         }
     }
 
+    private function getTableName()
+    {
+        $delta = $this->delta();
+
+        switch ($delta){
+            case self::SECTION:
+                return config('permission.table_names.sections');
+            case self::PERMISSION:
+                return config('permission.table_names.permissions');
+            case self::ROLE:
+                return config('permission.table_names.roles');
+            default:
+                throw MalformedParameter::create($delta);
+        }
+    }
+
     private function getInterfaceAllStates()
     {
         $delta = $this->delta();
@@ -76,7 +92,8 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
 
         $this->validate($request, [
             'name' => [
-                'required'
+                'required',
+                Rule::unique($this->getTableName())
             ],
             'state' => [
                 'required',
@@ -165,7 +182,7 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
         $this->validate($request, [
             'field' => [
                 'required',
-                Rule::in(['name','state'])
+                Rule::in(['name','state', 'label'])
             ]
         ]);
 
@@ -175,7 +192,8 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
             case 'name':
                 $this->validate($request, [
                     $field => [
-                        'required'
+                        'required',
+                        Rule::unique($this->getTableName())->ignore($modelId)
                     ]
                 ]);
                 break;
@@ -187,11 +205,30 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
                     ]
                 ]);
                 break;
+            case 'label':
+                $this->validate($request, [
+                    $field => [
+                        'required'
+                    ],
+                    'locale' => [
+                        'required'
+                    ]
+                ]);
+                break;
         }
 
         $data = $request->all();
         unset($data['field']);
-        $model->update($data);
+
+        if($field != 'label'){
+            $model->update($data);
+        }else{
+            $label = $model->label;
+            $label[$request->input('locale')] = $request->input('label');
+            $model->label = $label;
+            $model->save();
+        }
+
     }
 
     abstract protected function delta() : string;
