@@ -21,7 +21,7 @@ trait UserManagement{
 
         $userConfigs = config("permission.user.model.{$guard}");
 
-        $model = app($userConfigs['interface']);
+        $model = app($userConfigs['model']);
 
         $this->checkUserModelProperTrait($model);
 
