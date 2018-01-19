@@ -146,4 +146,9 @@ class Section extends Model implements SectionContract
     protected function isForceDeleting(){
         return true;
     }
+
+    public function scopeEnabled($query, $state = \Idsign\Permission\Contracts\Section::ENABLED)
+    {
+        return $query->where('state', $state);
+    }
 }

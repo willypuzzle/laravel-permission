@@ -115,4 +115,9 @@ class Permission extends Model implements PermissionContract
     protected function isForceDeleting(){
         return true;
     }
+
+    public function scopeEnabled($query, $state = \Idsign\Permission\Contracts\Permission::ENABLED)
+    {
+        return $query->where('state', $state);
+    }
 }

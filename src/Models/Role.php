@@ -154,4 +154,9 @@ class Role extends Model implements RoleContract
     protected function isForceDeleting(){
         return true;
     }
+
+    public function scopeEnabled($query, $state = \Idsign\Permission\Contracts\Role::ENABLED)
+    {
+        return $query->where('state', $state);
+    }
 }
