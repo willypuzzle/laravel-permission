@@ -127,7 +127,7 @@ abstract class UserController extends RoleCheckerController
      */
     public function update(Request $request, $userId)
     {
-        $this->validateUpdate($request);
+        $this->validateUpdate($request, $userId);
 
         $user = $this->getUserModel()->findOrFail($userId);
 
@@ -141,9 +141,9 @@ abstract class UserController extends RoleCheckerController
         }
     }
 
-    abstract protected function validateUpdate(Request $request);
+    abstract protected function validateUpdate(Request $request, $userId);
 
-    abstract protected function validateUpdateComplete(Request $request);
+    abstract protected function validateUpdateComplete(Request $request, $userId);
 
     /**
      * @param Request $request
@@ -152,7 +152,7 @@ abstract class UserController extends RoleCheckerController
      */
     public function updateComplete(Request $request, $userId)
     {
-        $this->validateUpdateComplete($request);
+        $this->validateUpdateComplete($request, $userId);
 
         $user = $this->getUserModel()->findOrFail($userId);
 
