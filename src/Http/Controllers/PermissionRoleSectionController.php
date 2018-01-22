@@ -91,6 +91,12 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
         $this->checkForPermittedRoles();
 
         $this->validate($request, [
+            'label' => [
+                'required'
+            ],
+            'locale' => [
+                'required'
+            ],
             'name' => [
                 'required',
                 Rule::unique($this->getTableName())
@@ -104,6 +110,12 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
         $data = $request->all();
 
         $data['guard_name'] = $this->usedGuard();
+        $label = [];
+        $label[] = $data['label'];
+        unset($data['locale']);
+
+        $data['label'] = $label;
+
 
         $model = $this->getModel();
 
@@ -224,7 +236,7 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
             $model->update($data);
         }else{
             $label = $model->label;
-            $label[$request->input('locale')] = $request->input('label');
+            $label[$data['locale']] = $data['label'];
             $model->label = $label;
             $model->save();
         }
