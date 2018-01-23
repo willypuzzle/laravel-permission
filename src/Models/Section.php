@@ -155,4 +155,9 @@ class Section extends Model implements SectionContract
     {
         return $query->where('state', $state);
     }
+
+    public function section_type()
+    {
+        return $this->belongsTo(config('permission.models.section_type'));
+    }
 }

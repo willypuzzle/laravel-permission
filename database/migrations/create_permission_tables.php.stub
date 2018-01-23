@@ -33,15 +33,29 @@ class CreatePermissionTables extends Migration
             $table->timestamps();
         });
 
-        Schema::create($tableNames['sections'], function (Blueprint $table) use ($defaultState){
+        Schema::create($tableNames['section_types'], function (Blueprint $table) use ($defaultState){
             $table->increments('id');
             $table->string('name');
             $table->json('label')->nullable();
-            $table->string('type')->nullable();
-            $table->json('type_label')->nullable();
             $table->string('guard_name');
             $table->integer('state')->default($defaultState)->comment('0 = disabled, 1 = enabled');
             $table->timestamps();
+        });
+
+        Schema::create($tableNames['sections'], function (Blueprint $table) use ($defaultState, $tableNames){
+            $table->increments('id');
+            $table->string('name');
+            $table->json('label')->nullable();
+            $table->integer('section_type_id')->unsigned()->nullable();
+            $table->string('guard_name');
+            $table->integer('state')->default($defaultState)->comment('0 = disabled, 1 = enabled');
+            $table->timestamps();
+
+            $table->foreign('section_type_id')
+                            ->references('id')
+                            ->on($tableNames['section_types'])
+                            ->onDelete('restrict')
+                            ->onUpdate('cascade');
         });
 
         Schema::create($tableNames['model_has_permissions'], function (Blueprint $table) use ($tableNames) {

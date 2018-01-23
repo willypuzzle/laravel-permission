@@ -61,6 +61,8 @@ return [
 
         'section' => Idsign\Permission\Models\Section::class,
 
+        'section_type' => Idsign\Permission\Models\SectionType::class,
+
     ],
 
     'table_names' => [
@@ -112,6 +114,8 @@ return [
          */
 
         'role_has_permissions' => 'role_has_permissions',
+
+        'section_types' => 'section_types'
     ],
 
     /*

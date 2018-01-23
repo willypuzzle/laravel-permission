@@ -7,6 +7,7 @@ use Illuminate\View\Compilers\BladeCompiler;
 use Idsign\Permission\Contracts\Role as RoleContract;
 use Idsign\Permission\Contracts\Permission as PermissionContract;
 use Idsign\Permission\Contracts\Section as SectionContract;
+use Idsign\Permission\Contracts\SectionType as SectionTypeContract;
 
 class PermissionServiceProvider extends ServiceProvider
 {
@@ -53,6 +54,7 @@ class PermissionServiceProvider extends ServiceProvider
         $this->app->bind(PermissionContract::class, $config['permission']);
         $this->app->bind(RoleContract::class, $config['role']);
         $this->app->bind(SectionContract::class, $config['section']);
+        $this->app->bind(SectionTypeContract::class, $config['section_type']);
 
         $userConfigs  = config("permission.user.model");
 

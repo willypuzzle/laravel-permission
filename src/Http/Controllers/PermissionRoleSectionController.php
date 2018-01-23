@@ -5,6 +5,7 @@ namespace Idsign\Permission\Http\Controllers;
 use Idsign\Permission\Contracts\Permission as PermissionInterface;
 use Idsign\Permission\Contracts\Section as SectionInterface;
 use Idsign\Permission\Contracts\Role as RoleInterface;
+use Idsign\Permission\Contracts\SectionType as SectionTypeInterface;
 use Idsign\Permission\Exceptions\MalformedParameter;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,7 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
     const SECTION = 'section';
     const PERMISSION = 'permission';
     const ROLE = 'role';
+    const SECTION_TYPE = 'section_type';
 
     private function getInterfaceName()
     {
@@ -29,6 +31,8 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
                 return PermissionInterface::class;
             case self::ROLE:
                 return RoleInterface::class;
+            case self::SECTION_TYPE:
+                return SectionTypeInterface::class;
             default:
                 throw MalformedParameter::create($delta);
         }
@@ -45,6 +49,8 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
                 return config('permission.table_names.permissions');
             case self::ROLE:
                 return config('permission.table_names.roles');
+            case self::SECTION_TYPE:
+                return config('permission.table_names.section_types');
             default:
                 throw MalformedParameter::create($delta);
         }
@@ -61,12 +67,14 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
                 return PermissionInterface::ALL_STATES;
             case self::ROLE:
                 return RoleInterface::ALL_STATES;
+            case self::SECTION_TYPE:
+                return SectionTypeInterface::ALL_STATES;
             default:
                 throw MalformedParameter::create($delta);
         }
     }
 
-    private function getModel() : Model
+    protected function getModel() : Model
     {
         return app($this->getInterfaceName());
     }
@@ -90,7 +98,7 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
     {
         $this->checkForPermittedRoles();
 
-        $this->validate($request, [
+        $validationArray = [
             'label' => [
                 'required'
             ],
@@ -105,7 +113,15 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
                 'required',
                 Rule::in($this->getInterfaceAllStates())
             ]
-        ]);
+        ];
+
+        if($this->delta() == self::SECTION){
+            $validationArray['section_type_id'] = [
+                'exists:'.$this->getTableName().',id'
+            ];
+        }
+
+        $this->validate($request, $validationArray);
 
         $data = $request->all();
 
@@ -191,10 +207,16 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
 
         $model = $this->getModel()->where(['id' => $modelId, 'guard_name' => $this->usedGuard()])->firstOrFail();
 
+        $validationArrayRuleIn = ['name','state', 'label'];
+
+        if($this->delta() == self::SECTION){
+            $validationArray[] = 'section_type_id';
+        }
+
         $this->validate($request, [
             'field' => [
                 'required',
-                Rule::in(['name','state', 'label'])
+                Rule::in($validationArrayRuleIn)
             ]
         ]);
 
@@ -224,6 +246,14 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
                     ],
                     'locale' => [
                         'required'
+                    ]
+                ]);
+                break;
+            case 'section_type_id':
+                $this->validate($request, [
+                    $field => [
+                        'required',
+                        'exists:'.$this->getTableName().',id'
                     ]
                 ]);
                 break;
