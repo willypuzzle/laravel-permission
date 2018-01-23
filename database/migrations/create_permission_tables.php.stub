@@ -37,7 +37,8 @@ class CreatePermissionTables extends Migration
             $table->increments('id');
             $table->string('name');
             $table->json('label')->nullable();
-            $table->json('type')->nullable();
+            $table->string('type')->nullable();
+            $table->json('type_label')->nullable();
             $table->string('guard_name');
             $table->integer('state')->default($defaultState)->comment('0 = disabled, 1 = enabled');
             $table->timestamps();
