@@ -13,4 +13,11 @@ class SectionTypeController extends PermissionRoleSectionController
     {
         return self::SECTION_TYPE;
     }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function all(){
+        return response()->json($this->getModel()->where(['guard_name' => $this->usedGuard()])->get()->toArray());
+    }
 }

@@ -12,7 +12,7 @@ class MatrixController extends RoleCheckerController
 {
     public function __construct()
     {
-        $this->addPermittedRoles([config('permission.roles.superuser')]);
+        $this->addPermittedRoles([config('permission.roles.superuser'), config('permission.roles.admin')]);
     }
 
     /**

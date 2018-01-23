@@ -86,7 +86,7 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
      */
     public function all(){
         $this->checkForPermittedRoles();
-        return response()->json($this->getModel()->where(['guard_name' => $this->usedGuard()])->toArray());
+        return response()->json($this->getModel()->where(['guard_name' => $this->usedGuard()])->get()->toArray());
     }
 
     /**
