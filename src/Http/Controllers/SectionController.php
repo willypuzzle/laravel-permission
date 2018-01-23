@@ -18,6 +18,23 @@ class SectionController extends PermissionRoleSectionController
     }
 
     /**
+     * @return \Illuminate\Http\JsonResponse
+     * @throws AuthenticationException
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    public function all($type = null){
+        $this->checkForPermittedRoles();
+
+        $where = ['guard_name' => $this->usedGuard()];
+
+        if($type){
+            $where['section_type_id'] = $type;
+        }
+
+        return response()->json($this->getModel()->where($where)->toArray());
+    }
+
+    /**
      * @return mixed
      * @throws AuthenticationException
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
@@ -29,7 +46,7 @@ class SectionController extends PermissionRoleSectionController
         $query = $this->getModel()->query()->where(['guard_name' => $this->usedGuard()]);
 
         if($type){
-            $query->where('type', $type);
+            $query->where('section_type_id', $type);
         }
 
         return Datatable::of($query)->make(true);
