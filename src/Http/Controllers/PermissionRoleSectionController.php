@@ -127,7 +127,7 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
 
         $data['guard_name'] = $this->usedGuard();
         $label = [];
-        $label[] = $data['label'];
+        $label[$data['locale']] = $data['label'];
         unset($data['locale']);
 
         $data['label'] = $label;
