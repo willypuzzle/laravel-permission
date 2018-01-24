@@ -31,7 +31,7 @@ class SectionController extends PermissionRoleSectionController
             $where['section_type_id'] = $type;
         }
 
-        return response()->json($this->getModel()->where($where)->toArray());
+        return response()->json($this->getModel()->where($where)->get()->toArray());
     }
 
     /**
