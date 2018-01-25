@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Idsign\Vuetify\Facades\Datatable;
 use Illuminate\Support\Facades\DB;
+use Willypuzzle\Helpers\Contracts\HttpCodes;
 
 abstract class PermissionRoleSectionController extends RoleCheckerController
 {
@@ -193,6 +194,11 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
     public function delete($modelId)
     {
         $this->checkForPermittedRoles();
+
+        if($this->delta() == self::SECTION_TYPE && app(SectionInterface::class)->find($modelId)){
+            return response()->json([], HttpCodes::CONFLICT);
+        }
+
         $model = $this->getModel()->where(['id' => $modelId, 'guard_name' => $this->usedGuard()])->firstOrFail();
 
         $model->delete();
@@ -222,6 +228,12 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
         $validatedData = $request->validate([
             'items' => 'required|json'
         ]);
+
+        foreach (json_decode($validatedData['items'], true) as $item){
+            if($this->delta() == self::SECTION_TYPE && app(SectionInterface::class)->find($item['id'])){
+                return response()->json([], HttpCodes::CONFLICT);
+            }
+        }
 
         foreach (json_decode($validatedData['items'], true) as $item){
             $model = $this->getModel()->where(['id' => $item['id'], 'guard_name' => $this->usedGuard()])->firstOrFail();
