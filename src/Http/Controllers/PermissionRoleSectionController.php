@@ -7,11 +7,13 @@ use Idsign\Permission\Contracts\Section as SectionInterface;
 use Idsign\Permission\Contracts\Role as RoleInterface;
 use Idsign\Permission\Contracts\SectionType as SectionTypeInterface;
 use Idsign\Permission\Exceptions\MalformedParameter;
+use Idsign\Permission\Exceptions\UnsupportedDatabaseType;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Idsign\Vuetify\Facades\Datatable;
+use Illuminate\Support\Facades\DB;
 
 abstract class PermissionRoleSectionController extends RoleCheckerController
 {
@@ -19,6 +21,8 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
     const PERMISSION = 'permission';
     const ROLE = 'role';
     const SECTION_TYPE = 'section_type';
+
+    protected $databaseDriver = null;
 
     private function getInterfaceName()
     {
@@ -141,8 +145,11 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
     }
 
     /**
+     * @param Request $request
+     * @param null $type
      * @return mixed
      * @throws AuthenticationException
+     * @throws UnsupportedDatabaseType
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
      */
     public function data(Request $request, $type = null)
@@ -157,12 +164,25 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
 
         $locale = $request->input('locale');
 
+        $database = $this->databaseDriver ?? DB::connection()->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
+
+        switch ($database){
+            case 'mysql':
+                $orderByClause = "JSON_EXTRACT(label, '$.{$locale}', name";
+                break;
+            case 'pgsql':
+                $orderByClause = "label->>'{$locale}', name";
+                break;
+            default:
+                throw UnsupportedDatabaseType::create($database);
+        }
+
         return Datatable::of($query)->filterColumn('label',function ($query, $value) use ($locale){
             $query->where(function ($query) use ($locale, $value){
                 $query->orWhere("label->{$locale}", $value);
                 $query->orWhere('name', $value);
             });
-        })->make(true);
+        })->orderColumn('label', $orderByClause)->make(true);
     }
 
     /**
