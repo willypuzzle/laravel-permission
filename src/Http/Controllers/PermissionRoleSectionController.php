@@ -145,10 +145,24 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
      * @throws AuthenticationException
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
      */
-    public function data()
+    public function data(Request $request, $type = null)
     {
         $this->checkForPermittedRoles();
-        return Datatable::of($this->getModel()->query()->where(['guard_name' => $this->usedGuard()]))->make(true);
+
+        $query = $this->getModel()->query()->where(['guard_name' => $this->usedGuard()]);
+
+        if($type && $this->delta() == self::SECTION){
+            $query->where('section_type_id', $type);
+        }
+
+        $locale = $request->input('locale');
+
+        return Datatable::of($query)->filterColumn('label',function ($query, $value) use ($locale){
+            $query->where(function ($query) use ($locale, $value){
+                $query->orWhere("label->{$locale}", $value);
+                $query->orWhere('name', $value);
+            });
+        })->make(true);
     }
 
     /**

@@ -33,22 +33,4 @@ class SectionController extends PermissionRoleSectionController
 
         return response()->json($this->getModel()->where($where)->get()->toArray());
     }
-
-    /**
-     * @return mixed
-     * @throws AuthenticationException
-     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
-     */
-    public function data($type = null)
-    {
-        $this->checkForPermittedRoles();
-
-        $query = $this->getModel()->query()->where(['guard_name' => $this->usedGuard()]);
-
-        if($type){
-            $query->where('section_type_id', $type);
-        }
-
-        return Datatable::of($query)->make(true);
-    }
 }
