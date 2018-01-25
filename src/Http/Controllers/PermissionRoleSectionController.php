@@ -168,10 +168,10 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
 
         switch ($database){
             case 'mysql':
-                $orderByClause = "JSON_EXTRACT(label, '$.{$locale}', name";
+                $orderByClause = "JSON_EXTRACT(label, '$.{$locale}' $1, name $1";
                 break;
             case 'pgsql':
-                $orderByClause = "label->>'{$locale}', name";
+                $orderByClause = "label->>'{$locale}' $1, name $1";
                 break;
             default:
                 throw UnsupportedDatabaseType::create($database);
