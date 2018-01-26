@@ -60,4 +60,15 @@ trait UserManagement{
             throw DoesNotUseProperTraits::create($model);
         }
     }
+
+    /**
+     * @return bool
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    protected function isSuperuser()
+    {
+        return $this->getLoggedUser()->roles()->get()->filter(function ($el){
+                return $el->name == config('permission.roles.superuser');
+            })->count() > 0;
+    }
 }

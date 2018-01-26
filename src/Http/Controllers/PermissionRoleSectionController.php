@@ -178,6 +178,10 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
                 throw UnsupportedDatabaseType::create($database);
         }
 
+        if($this->delta() == self::ROLE && !$this->isSuperuser()){
+            $query->where('name', '!=', config('permission.roles.superuser'));
+        }
+
         return Datatable::of($query)->filterColumn('label',function ($query, $value) use ($locale){
             $query->where(function ($query) use ($locale, $value){
                 $query->orWhere("label->{$locale}", $value);
@@ -200,6 +204,12 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
         }
 
         $model = $this->getModel()->where(['id' => $modelId, 'guard_name' => $this->usedGuard()])->firstOrFail();
+
+        if($this->delta() == self::ROLE && !$this->isSuperuser()){
+            if($model->name == config('permission.roles.superuser')){
+                return response()->json([], HttpCodes::FORBIDDEN);
+            }
+        }
 
         $model->delete();
     }
@@ -230,8 +240,15 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
         ]);
 
         foreach (json_decode($validatedData['items'], true) as $item){
-            if($this->delta() == self::SECTION_TYPE && app(SectionInterface::class)->find($item['id'])){
+            $model = app(SectionInterface::class)->find($item['id']);
+            if($this->delta() == self::SECTION_TYPE && $model){
                 return response()->json([], HttpCodes::CONFLICT);
+            }
+
+            if($this->delta() == self::ROLE && !$this->isSuperuser()){
+                if($model->name == config('permission.roles.superuser')){
+                    return response()->json([], HttpCodes::FORBIDDEN);
+                }
             }
         }
 
@@ -306,6 +323,13 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
         }
 
         $data = $request->all();
+
+        if($this->delta() == self::ROLE && $data['field'] == 'state'){
+            if($model->name == config('permission.roles.superuser')){
+                return response()->json([], HttpCodes::FORBIDDEN);
+            }
+        }
+
         unset($data['field']);
 
         if($field != 'label'){
