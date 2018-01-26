@@ -6,6 +6,8 @@ use Idsign\Permission\Contracts\Role;
 use Idsign\Vuetify\Facades\Datatable;
 use Illuminate\Http\Request;
 use Idsign\Permission\Traits\UserManagement;
+use Illuminate\Support\Facades\DB;
+use Willypuzzle\Helpers\Contracts\HttpCodes;
 
 abstract class UserController extends RoleCheckerController
 {
@@ -28,7 +30,17 @@ abstract class UserController extends RoleCheckerController
     {
         $this->checkForPermittedRoles();
 
-        return response()->json($this->getUserModel()::all()->toArray());
+        $collection = $this->getUserModel()::all();
+
+        if(!$this->isSuperuser()){
+            $collection = $collection->filter(function ($el1){
+               return $el1->roles()->get()->filter(function ($el2){
+                    return $el2->name === config('permission.roles.superuser');
+               })->count() == 0;
+            });
+        }
+
+        return response()->json($collection->toArray());
     }
 
     abstract protected function validateCreation(Request $request);
@@ -56,6 +68,13 @@ abstract class UserController extends RoleCheckerController
         $user->save();
 
         if(isset($data[$this->rolesField])){
+            if(!$this->isSuperuser()){
+                if(app(Role::class)->whereIn('id', $data[$this->rolesField])->get()->filter(function ($el){
+                    return $el->name === config('permission.roles.superuser');
+                })->count() > 0){
+                    return response()->json([], HttpCodes::FORBIDDEN);
+                }
+            }
             $roles = app(Role::class)->whereIn('id', $data[$this->rolesField])->get()->all();
             $user->syncRoles(...$roles);
         }
@@ -71,7 +90,22 @@ abstract class UserController extends RoleCheckerController
     {
         $this->checkForPermittedRoles();
 
-        return Datatable::of($this->getUserModel()->newQuery()->where('deleted_at', NULL))->make(true);
+        $query = $this->getUserModel()->newQuery()->where('deleted_at', NULL);
+
+        if(!$this->isSuperuser()){
+            $superuserRoleModel = app(Role::class)->findByName(config('permission.roles.superuser'), $this->usedGuard());
+            $userModel = app(config('permission.user.model.'.$this->usedGuard().'.model'));
+            $query->whereNotExists(function ($query) use ($userModel, $superuserRoleModel){
+                $pivotTableName = config('permission.table_names.model_has_roles').'.model_id';
+                $query->select(DB::raw(1))
+                        ->from($pivotTableName)
+                        ->where($userModel->getTable().'.'.$userModel->getKeyName(), $pivotTableName.'.model_id')
+                        ->where($pivotTableName.'.model_type', $userModel->roles()->getMorphClass())
+                        ->where($pivotTableName.'.role_id', $superuserRoleModel->id);
+            });
+        }
+
+        return Datatable::of($query)->make(true);
     }
 
     /**
@@ -84,6 +118,15 @@ abstract class UserController extends RoleCheckerController
         $this->checkForPermittedRoles();
 
         $user = $this->getUserModel()->findOrFail($userId);
+
+        if(!$this->isSuperuser()){
+            if($user->roles()->get()->filter(function ($el){
+                return $el->name === confing('permission.roles.superuser');
+            })->count() > 0)
+            {
+                return response()->json([], HttpCodes::FORBIDDEN);
+            }
+        }
 
         $user->delete();
     }
@@ -116,6 +159,18 @@ abstract class UserController extends RoleCheckerController
 
         foreach (json_decode($validatedData['items'], true) as $item){
             $user = $this->getUserModel()->findOrFail($item['id']);
+            if(!$this->isSuperuser()){
+                if($user->roles()->get()->filter(function ($el){
+                        return $el->name === confing('permission.roles.superuser');
+                    })->count() > 0)
+                {
+                    return response()->json([], HttpCodes::FORBIDDEN);
+                }
+            }
+        }
+
+        foreach (json_decode($validatedData['items'], true) as $item){
+            $user = $this->getUserModel()->findOrFail($item['id']);
             $user->delete();
         }
     }
@@ -124,12 +179,24 @@ abstract class UserController extends RoleCheckerController
      * @param Request $request
      * @param $userId
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function update(Request $request, $userId)
     {
+        $this->checkForPermittedRoles();
+
         $this->validateUpdate($request, $userId);
 
         $user = $this->getUserModel()->findOrFail($userId);
+
+        if(!$this->isSuperuser()){
+            if($user->roles()->get()->filter(function ($el){
+                return $el->name === config('permission.roles.superuser');
+            })->count() > 0)
+            {
+                return response()->json([], HttpCodes::FORBIDDEN);
+            }
+        }
 
         $rolesInput = $request->input($this->rolesField);
 

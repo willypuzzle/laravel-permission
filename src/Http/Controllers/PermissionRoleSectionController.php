@@ -91,7 +91,16 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
      */
     public function all(){
         $this->checkForPermittedRoles();
-        return response()->json($this->getModel()->where(['guard_name' => $this->usedGuard()])->get()->toArray());
+
+        $collection = $this->getModel()->where(['guard_name' => $this->usedGuard()])->get();
+
+        if($this->delta() == self::ROLE && !$this->isSuperuser()){
+            $collection = $collection->filter(function ($el){
+                return $el->name != config('permission.roles.superuser');
+            });
+        }
+
+        return response()->json($collection->toArray());
     }
 
     /**
