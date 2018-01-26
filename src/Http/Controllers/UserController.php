@@ -105,7 +105,18 @@ abstract class UserController extends RoleCheckerController
             });
         }
 
-        return Datatable::of($query)->make(true);
+        $data = Datatable::of($query)->make(true);
+
+        $dataComplete = $data->getData(true);
+        $data = $dataComplete['data'];
+
+        foreach ($data as $key => $d){
+            $data[$key]['roles'] = $this->getUserModel()->findOrFail($d['id'])->roles()->get();
+        }
+
+        $dataComplete['data'] = $data;
+
+        return response()->json($dataComplete);
     }
 
     /**
