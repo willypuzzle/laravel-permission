@@ -2,6 +2,8 @@
 
 namespace Idsign\Permission\Http\Controllers;
 
+use Illuminate\Http\Request;
+
 class SectionTypeController extends PermissionRoleSectionController
 {
     public function __construct()
@@ -17,7 +19,7 @@ class SectionTypeController extends PermissionRoleSectionController
     /**
      * @return \Illuminate\Http\JsonResponse
      */
-    public function all(){
+    public function all(Request $request){
         return response()->json($this->getModel()->where(['guard_name' => $this->usedGuard()])->get()->toArray());
     }
 }
