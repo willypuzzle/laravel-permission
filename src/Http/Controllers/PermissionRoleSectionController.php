@@ -102,15 +102,22 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
 
         $locale = $request->input('locale');
 
-        $collection = $collection->sortBy(function ($el) use ($locale){
-            if($locale){
-                return isset($el->label[$locale]) ? $el->label[$locale] : $el->name;
-            }else{
-                return $el->name;
-            }
+        $collection = $collection->sort(function ($el1, $el2) use ($locale){
+            return self::sorter($el1, $el2, $locale);
         });
 
         return response()->json($collection->toArray());
+    }
+
+    public static function sorter($el1, $el2, $locale = null)
+    {
+        if($locale){
+            $el1Key = isset($el1->label[$locale]) ? $el1->label[$locale] : $el1->name;
+            $el2Key = isset($el2->label[$locale]) ? $el2->label[$locale] : $el2->name;
+            return $el1Key > $el2Key;
+        }else{
+            return $el1->name > $el2;
+        }
     }
 
     /**

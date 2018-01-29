@@ -40,11 +40,19 @@ abstract class UserController extends RoleCheckerController
             });
         }
 
-        $collection = $collection->sortBy(function($el){
-            return $el->surname ? $el->surname.' '.$el->name : $el->name;
+        $collection = $collection->sort(function($el1, $el2){
+            return self::sorter($el1, $el2);
         });
 
         return response()->json($collection->toArray());
+    }
+
+    public static function sorter($el1, $el2)
+    {
+        $el1Key = $el1->surname ? $el1->surname.' '.$el1->name : $el1->name;
+        $el2Key = $el2->surname ? $el2->surname.' '.$el2->name : $el2->name;
+
+        return $el1Key > $el2Key;
     }
 
     abstract protected function validateCreation(Request $request);
