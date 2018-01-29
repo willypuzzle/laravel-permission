@@ -89,7 +89,7 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
      * @throws AuthenticationException
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
      */
-    public function all(){
+    public function all(Request $request){
         $this->checkForPermittedRoles();
 
         $collection = $this->getModel()->where(['guard_name' => $this->usedGuard()])->get();
@@ -99,6 +99,16 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
                 return $el->name != config('permission.roles.superuser');
             });
         }
+
+        $locale = $request->input('locale');
+
+        $collection = $collection->sortBy(function ($el) use ($locale){
+            if($locale){
+                return isset($el->label[$locale]) ? $el->label[$locale] : $el->name;
+            }else{
+                return $el->name;
+            }
+        });
 
         return response()->json($collection->toArray());
     }

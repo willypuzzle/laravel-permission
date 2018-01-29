@@ -40,6 +40,10 @@ abstract class UserController extends RoleCheckerController
             });
         }
 
+        $collection = $collection->sortBy(function($el){
+            return $el->surname ? $el->surname.' '.$el->name : $el->name;
+        });
+
         return response()->json($collection->toArray());
     }
 

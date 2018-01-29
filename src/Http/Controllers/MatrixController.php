@@ -22,7 +22,7 @@ class MatrixController extends RoleCheckerController
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
      * @throws \Illuminate\Auth\AuthenticationException
      */
-    public function roleMatrixInit($sectionId)
+    public function roleMatrixInit(Request $request, $sectionId)
     {
         $this->checkForPermittedRoles();
 
@@ -37,6 +37,16 @@ class MatrixController extends RoleCheckerController
                 return $el->name !== config('permission.roles.superuser');
             });
         }
+
+        $locale = $request->input('locale');
+
+        $roles = $roles->sortBy(function ($el) use ($locale){
+            if($locale){
+                return isset($el->label[$locale]) ? $el->label[$locale] : $el->name;
+            }else{
+                return $el->name;
+            }
+        });
 
         $permissions = app(Permission::class)->where('guard_name', $guard)->get();
 
@@ -135,6 +145,10 @@ class MatrixController extends RoleCheckerController
                 })->count() == 0;
             });
         }
+
+        $users = $users->sortBy(function($el){
+            return $el->surname ? $el->surname.' '.$el->name : $el->name;
+        });
 
         $permissions = app(Permission::class)->where('guard_name', $guard)->get();
 
