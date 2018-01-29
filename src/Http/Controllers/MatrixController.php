@@ -50,6 +50,14 @@ class MatrixController extends RoleCheckerController
 
         $permissions = app(Permission::class)->where('guard_name', $guard)->get();
 
+        $array = $permissions->all();
+
+        usort($array, function ($el1, $el2) use ($locale){
+            return PermissionRoleSectionController::sorter($el1, $el2, $locale);
+        });
+
+        $permissions = collect($array);
+
         $matrix = [];
         foreach ($roles as $role){
             $matrix[$role->id] = [];
@@ -128,7 +136,7 @@ class MatrixController extends RoleCheckerController
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
      * @throws \Illuminate\Auth\AuthenticationException
      */
-    public function userMatrixInit($sectionId)
+    public function userMatrixInit(Request $request, $sectionId)
     {
         $this->checkForPermittedRoles();
 
@@ -159,6 +167,16 @@ class MatrixController extends RoleCheckerController
         $users = collect($array);
 
         $permissions = app(Permission::class)->where('guard_name', $guard)->get();
+
+        $locale = $request->input('locale');
+
+        $array = $permissions->all();
+
+        usort($array, function ($el1, $el2) use ($locale){
+            return PermissionRoleSectionController::sorter($el1, $el2, $locale);
+        });
+
+        $permissions = collect($array);
 
         $matrix = [];
         foreach ($users as $user){
