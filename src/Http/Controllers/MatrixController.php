@@ -40,9 +40,13 @@ class MatrixController extends RoleCheckerController
 
         $locale = $request->input('locale');
 
-        $roles = $roles->sort(function ($el1, $el2) use ($locale){
+        $array = $roles->all();
+
+        usort($array, function ($el1, $el2) use ($locale){
             return PermissionRoleSectionController::sorter($el1, $el2, $locale);
         });
+
+        $roles = collect($array);
 
         $permissions = app(Permission::class)->where('guard_name', $guard)->get();
 
@@ -145,6 +149,14 @@ class MatrixController extends RoleCheckerController
         $users = $users->sort(function($el1, $el2){
             return UserController::sorter($el1, $el2);
         });
+
+        $array = $users->all();
+
+        usort($array, function ($el1, $el2){
+            return UserController::sorter($el1, $el2);
+        });
+
+        $users = collect($array);
 
         $permissions = app(Permission::class)->where('guard_name', $guard)->get();
 

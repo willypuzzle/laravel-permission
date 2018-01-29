@@ -40,11 +40,13 @@ abstract class UserController extends RoleCheckerController
             });
         }
 
-        $collection = $collection->sort(function($el1, $el2){
+        $array = $collection->all();
+
+        usort($array, function ($el1, $el2){
             return self::sorter($el1, $el2);
         });
 
-        return response()->json($collection->toArray());
+        return response()->json($array);
     }
 
     public static function sorter($el1, $el2)

@@ -102,11 +102,13 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
 
         $locale = $request->input('locale');
 
-        $collection = $collection->sort(function ($el1, $el2) use ($locale){
+        $array = $collection->all();
+
+        usort($array, function ($el1, $el2) use ($locale){
             return self::sorter($el1, $el2, $locale);
         });
 
-        return response()->json($collection->toArray());
+        return response()->json($array);
     }
 
     public static function sorter($el1, $el2, $locale = null)
