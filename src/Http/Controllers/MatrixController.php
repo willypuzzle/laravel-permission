@@ -30,7 +30,7 @@ class MatrixController extends RoleCheckerController
 
         $section = app(Section::class)->where(['id' => $sectionId, 'guard_name' => $guard])->firstOrFail();
 
-        $roles = app(Role::class)::where('guard_name', $guard)->all();
+        $roles = app(Role::class)::where('guard_name', $guard)->get();
 
         if(!$this->isSuperuser()){
             $roles = $roles->filter(function ($el){

@@ -21,8 +21,17 @@ trait PermissionChecker
         return $this->section;
     }
 
+    /**
+     * @param User $user
+     * @param $permissions
+     * @param null $sections
+     */
     protected function checkPermission(User $user, $permissions, $sections = null)
     {
+        if($this->isSuperuser()){
+            return;
+        }
+
         if(is_string($permissions)){
             $permissions = [$permissions];
         }
