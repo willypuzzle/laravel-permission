@@ -5,14 +5,11 @@ namespace Idsign\Permission\Http\Controllers;
 use Idsign\Permission\Contracts\Role;
 use Idsign\Vuetify\Facades\Datatable;
 use Illuminate\Http\Request;
-use Idsign\Permission\Traits\UserManagement;
 use Illuminate\Support\Facades\DB;
 use Willypuzzle\Helpers\Contracts\HttpCodes;
 
 abstract class UserController extends RoleCheckerController
 {
-    use UserManagement;
-
     protected $rolesField = 'roles';
     protected $passwordField = 'password';
 
