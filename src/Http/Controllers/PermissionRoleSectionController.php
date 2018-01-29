@@ -114,10 +114,18 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
         if($locale){
             $el1Key = isset($el1->label[$locale]) ? $el1->label[$locale] : $el1->name;
             $el2Key = isset($el2->label[$locale]) ? $el2->label[$locale] : $el2->name;
-            return $el1Key > $el2Key;
+
+
         }else{
-            return $el1->name > $el2;
+            $el1Key = $el1->name;
+            $el2Key = $el2->name;
         }
+
+        if($el1Key == $el2Key){
+            return 0;
+        }
+
+        return $el1Key > $el2Key ? 1 : -1;
     }
 
     /**

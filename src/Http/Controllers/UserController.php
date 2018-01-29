@@ -52,7 +52,11 @@ abstract class UserController extends RoleCheckerController
         $el1Key = $el1->surname ? $el1->surname.' '.$el1->name : $el1->name;
         $el2Key = $el2->surname ? $el2->surname.' '.$el2->name : $el2->name;
 
-        return $el1Key > $el2Key;
+        if($el1Key == $el2Key){
+            return 0;
+        }
+
+        return $el1Key > $el2Key ? 1 : -1;
     }
 
     abstract protected function validateCreation(Request $request);
