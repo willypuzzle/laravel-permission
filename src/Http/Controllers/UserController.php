@@ -35,7 +35,7 @@ abstract class UserController extends RoleCheckerController
         if(!$this->isSuperuser()){
             $collection = $collection->filter(function ($el1){
                return $el1->roles()->get()->filter(function ($el2){
-                    return $el2->name === config('permission.roles.superuser');
+                    return $el2->name == config('permission.roles.superuser');
                })->count() == 0;
             });
         }
@@ -96,7 +96,7 @@ abstract class UserController extends RoleCheckerController
             $superuserRoleModel = app(Role::class)->findByName(config('permission.roles.superuser'), $this->usedGuard());
             $userModel = app(config('permission.user.model.'.$this->usedGuard().'.model'));
             $query->whereNotExists(function ($query) use ($userModel, $superuserRoleModel){
-                $pivotTableName = config('permission.table_names.model_has_roles').'.model_id';
+                $pivotTableName = config('permission.table_names.model_has_roles');
                 $query->select(DB::raw(1))
                         ->from($pivotTableName)
                         ->where($userModel->getTable().'.'.$userModel->getKeyName(), $pivotTableName.'.model_id')
