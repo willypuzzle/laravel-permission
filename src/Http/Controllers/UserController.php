@@ -99,7 +99,7 @@ abstract class UserController extends RoleCheckerController
                 $pivotTableName = config('permission.table_names.model_has_roles');
                 $query->select(DB::raw(1))
                         ->from($pivotTableName)
-                        ->where($userModel->getTable().'.'.$userModel->getKeyName(), $pivotTableName.'.model_id')
+                        ->whereRaw($userModel->getTable().'.'.$userModel->getKeyName().' = '.$pivotTableName.'.model_id')
                         ->where($pivotTableName.'.model_type', $userModel->roles()->getMorphClass())
                         ->where($pivotTableName.'.role_id', $superuserRoleModel->id);
             });
