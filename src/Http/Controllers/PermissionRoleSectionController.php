@@ -121,11 +121,7 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
             $el2Key = $el2->name;
         }
 
-        if($el1Key == $el2Key){
-            return 0;
-        }
-
-        return $el1Key > $el2Key ? 1 : -1;
+        return strcmp($el1Key, $el2Key);
     }
 
     /**
