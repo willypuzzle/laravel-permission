@@ -195,32 +195,6 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
             $query->where('section_type_id', $type);
         }
 
-//        $locale = $request->input('locale');
-//
-//        $database = $this->databaseDriver ?? DB::connection()->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
-//
-//        switch ($database){
-//            case 'mysql':
-//                $orderByClause = "JSON_EXTRACT(label, '$.{$locale}' $1, name $1";
-//                break;
-//            case 'pgsql':
-//                $orderByClause = "label->>'{$locale}' $1, name $1";
-//                break;
-//            default:
-//                throw UnsupportedDatabaseType::create($database);
-//        }
-//
-//        if($this->delta() == self::ROLE && !$this->isSuperuser()){
-//            $query->where('name', '!=', config('permission.roles.superuser'));
-//        }
-
-//        return Datatable::of($query)->filterColumn('label',function ($query, $value) use ($locale){
-//            $query->where(function ($query) use ($locale, $value){
-//                $query->orWhere("label->{$locale}", $value);
-//                $query->orWhere('name', $value);
-//            });
-//        })->orderColumn('label', $orderByClause)->make(true);
-
         return Datatable::of($query)->make(true);
     }
 
@@ -304,10 +278,14 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
 
         $model = $this->getModel()->where(['id' => $modelId, 'guard_name' => $this->usedGuard()])->firstOrFail();
 
-        $validationArrayRuleIn = ['name','state', 'label'];
+        $validationArrayRuleIn = ['state', 'label'];
 
         if($this->delta() == self::SECTION){
-            $validationArray[] = 'section_type_id';
+            $validationArrayRuleIn[] = 'section_type_id';
+        }
+
+        if($this->isSuperuser()){
+            $validationArrayRuleIn[] = 'name';
         }
 
         $this->validate($request, [
