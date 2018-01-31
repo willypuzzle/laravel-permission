@@ -23,6 +23,8 @@
             "role": "Developer"
         }
     ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "require": {
         "php": ">=7.0",
         "illuminate/auth": "~5.3.0|~5.4.0|~5.5.0",
@@ -30,7 +32,7 @@
         "illuminate/contracts": "~5.3.0|~5.4.0|~5.5.0",
         "illuminate/database": "~5.4.0|~5.5.0",
         "willypuzzle/laravel-helpers": "^0.1.10",
-        "willypuzzle/vuetify-php": "^0.0.3"
+        "willypuzzle/vuetify-php": "dev-master"
     },
     "require-dev": {
         "monolog/monolog": "^1.22",
