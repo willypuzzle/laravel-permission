@@ -248,5 +248,12 @@ abstract class UserController extends RoleCheckerController
         $user = $this->getUserModel()->findOrFail($userId);
 
         $user->update($request->all());
+
+        return $this->updateCompleteAddons($request, $user);
+    }
+
+    protected function updateCompleteAddons(Request $request, $user)
+    {
+        //This function is useful to perform more action on updateComplete
     }
 }
