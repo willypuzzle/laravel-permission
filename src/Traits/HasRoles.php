@@ -642,6 +642,11 @@ trait HasRoles
         return $result;
     }
 
+    public function isSuperuser()
+    {
+        return $this->hasRole(config('permission.roles.superuser'));
+    }
+
     private function parseCollectionForPermissionTree(Collection $collection) : array
     {
         $result = [];
