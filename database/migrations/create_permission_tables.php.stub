@@ -83,7 +83,7 @@ class CreatePermissionTables extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->primary(['permission_id', 'section_id', 'model_id', 'model_type']);
+            $table->primary(['permission_id', 'section_id', 'model_id', 'model_type'], $tableNames['model_has_permissions'].'_primary_key');
         });
 
         Schema::create($tableNames['model_has_roles'], function (Blueprint $table) use ($tableNames) {
@@ -96,7 +96,7 @@ class CreatePermissionTables extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->primary(['role_id', 'model_id', 'model_type']);
+            $table->primary(['role_id', 'model_id', 'model_type'], $tableNames['model_has_roles'].'_primary_key');
         });
 
         Schema::create($tableNames['role_has_permissions'], function (Blueprint $table) use ($tableNames) {
@@ -122,7 +122,7 @@ class CreatePermissionTables extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
 
-            $table->primary(['permission_id', 'role_id', 'section_id']);
+            $table->primary(['permission_id', 'role_id', 'section_id'], $tableNames['role_has_permissions'].'_primary_key');
 
             Artisan::call('cache:forget', ['key' => 'idsign.permission.cache.permissions']);
             Artisan::call('cache:forget', ['key' => 'idsign.permission.cache.sections']);
