@@ -2,7 +2,7 @@
 
 namespace Idsign\Permission\Contracts;
 
-interface SectionType
+interface Container
 {
     const ENABLED = 1;
     const DISABLED = 0;

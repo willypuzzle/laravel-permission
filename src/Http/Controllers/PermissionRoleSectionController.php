@@ -5,7 +5,6 @@ namespace Idsign\Permission\Http\Controllers;
 use Idsign\Permission\Contracts\Permission as PermissionInterface;
 use Idsign\Permission\Contracts\Section as SectionInterface;
 use Idsign\Permission\Contracts\Role as RoleInterface;
-use Idsign\Permission\Contracts\SectionType as SectionTypeInterface;
 use Idsign\Permission\Exceptions\MalformedParameter;
 use Idsign\Permission\Exceptions\UnsupportedDatabaseType;
 use Illuminate\Auth\AuthenticationException;
@@ -36,8 +35,6 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
                 return PermissionInterface::class;
             case self::ROLE:
                 return RoleInterface::class;
-            case self::SECTION_TYPE:
-                return SectionTypeInterface::class;
             default:
                 throw MalformedParameter::create($delta);
         }
@@ -72,8 +69,6 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
                 return PermissionInterface::ALL_STATES;
             case self::ROLE:
                 return RoleInterface::ALL_STATES;
-            case self::SECTION_TYPE:
-                return SectionTypeInterface::ALL_STATES;
             default:
                 throw MalformedParameter::create($delta);
         }
@@ -153,7 +148,7 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
         ];
 
         if($this->delta() == self::SECTION){
-            $validationArray['section_type_id'] = [
+            $validationArray['section_id'] = [
                 'exists:'.$this->getTableName().',id'
             ];
         }
@@ -175,6 +170,8 @@ abstract class PermissionRoleSectionController extends RoleCheckerController
         $model->fill($data);
 
         $model->save();
+
+        return response()->setStatusCode(HttpCodes::CREATED);
     }
 
     /**

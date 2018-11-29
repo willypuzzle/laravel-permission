@@ -156,8 +156,18 @@ class Section extends Model implements SectionContract
         return $query->where('state', $state);
     }
 
-    public function section_type()
+    public function parent()
     {
-        return $this->belongsTo(config('permission.models.section_type'));
+        return $this->belongsTo(config('permission.models.section'), 'section_id');
+    }
+
+    public function childrens()
+    {
+        return $this->hasMany(config('permission.models.section'), 'section_id');
+    }
+
+    public function tree()
+    {
+
     }
 }

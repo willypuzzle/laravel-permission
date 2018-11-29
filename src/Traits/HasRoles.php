@@ -278,7 +278,7 @@ trait HasRoles
             if($checkEnabled){
                 $set = $this->roles()->where([
                     'state' => Role::ENABLED,
-                    'id' => $roles->id
+                    config('permission.table_names.roles').'.id' => $roles->id
                 ])->get();
 
                 return $set->count() > 0;
@@ -552,6 +552,8 @@ trait HasRoles
                 return $checkEnabled ? $role->state == Role::ENABLED : true;
             })->flatMap(function ($role) use ($section){
                 return $role->permissions()->wherePivot('section_id', '=', $section->id)->get();
+            })->filter(function ($permission){
+                return $permission == Permission::ENABLED;
             })->sort()->values();
     }
 

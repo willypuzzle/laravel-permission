@@ -2,8 +2,7 @@
 
 namespace Idsign\Permission\Http\Controllers;
 
-use Illuminate\Auth\AuthenticationException;
-use Idsign\Vuetify\Facades\Datatable;
+use Illuminate\Http\Request;
 
 class SectionController extends PermissionRoleSectionController
 {
@@ -18,17 +17,19 @@ class SectionController extends PermissionRoleSectionController
     }
 
     /**
+     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
-     * @throws AuthenticationException
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
      */
-    public function all($type = null){
+    public function all(Request $request){
         $this->checkForPermittedRoles();
 
         $where = ['guard_name' => $this->usedGuard()];
 
-        if($type){
-            $where['section_type_id'] = $type;
+        $parent = $request->input('section_id');
+
+        if($parent){
+            $where['section_id'] = $parent;
         }
 
         return response()->json($this->getModel()->where($where)->get()->toArray());

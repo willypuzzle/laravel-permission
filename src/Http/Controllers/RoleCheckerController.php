@@ -2,8 +2,8 @@
 
 namespace Idsign\Permission\Http\Controllers;
 
+use Idsign\Permission\Exceptions\UnauthorizedException;
 use Idsign\Permission\Traits\UserManagement;
-use Illuminate\Auth\AuthenticationException;
 use Idsign\Permission\Http\Controllers\Controller;
 
 class RoleCheckerController extends Controller
@@ -18,14 +18,14 @@ class RoleCheckerController extends Controller
     }
 
     /**
-     * @throws AuthenticationException
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     * @throws UnauthorizedException
      */
     protected function checkForPermittedRoles()
     {
         if(count($this->roles) != 0){
             if (!$this->checkIfLoggeUserHasRole($this->roles)) {
-                throw new AuthenticationException('Wrong role', [$this->usedGuard()]);
+                throw UnauthorizedException::forRoles([]);
             }
         }
     }

@@ -61,7 +61,16 @@ return [
 
         'section' => Idsign\Permission\Models\Section::class,
 
-        'section_type' => Idsign\Permission\Models\SectionType::class,
+        /*
+         * When using the "HasRoles" trait from this package, we need to know which
+         * Eloquent model should be used to retrieve your roles. Of course, it
+         * is often just the "Container" model but you may use whatever you like.
+         *
+         * The model you want to use as a Role model needs to implement the
+         * `Idsign\Permission\Contracts\Container` contract.
+         */
+
+        'container' => Idsign\Permission\Models\Container::class,
 
     ],
 
@@ -115,7 +124,13 @@ return [
 
         'role_has_permissions' => 'role_has_permissions',
 
-        'section_types' => 'section_types'
+        /*
+         * When using the "HasRoles" trait from this package, we need to know which
+         * table should be used to retrieve your roles permissions. We have chosen a
+         * basic default value but you may easily change it to any table you like.
+         */
+
+        'containers' => 'containers'
     ],
 
     /*
