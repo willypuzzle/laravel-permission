@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 //use Illuminate\Database\Query\JoinClause;
 use DB;
 use Illuminate\Support\Collection;
+use function Idsign\Permission\Helpers\getModelForGuard;
 
 class Role extends Model implements RoleContract
 {

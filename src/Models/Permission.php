@@ -11,6 +11,7 @@ use Idsign\Permission\Exceptions\PermissionDoesNotExist;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Idsign\Permission\Exceptions\PermissionAlreadyExists;
 use Idsign\Permission\Contracts\Permission as PermissionContract;
+use function Idsign\Permission\Helpers\getModelForGuard;
 
 class Permission extends Model implements PermissionContract
 {

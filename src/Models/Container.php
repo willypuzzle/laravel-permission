@@ -12,7 +12,11 @@ use Idsign\Permission\Contracts\Container as ContainerInterface;
 
 class Container extends Model implements ContainerInterface
 {
-    public $guarded = ['id'];
+    protected $guarded = ['id'];
+
+    protected $casts = [
+        'label' => 'array',
+    ];
 
     public function __construct(array $attributes = [])
     {

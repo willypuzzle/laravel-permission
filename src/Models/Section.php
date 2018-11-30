@@ -11,6 +11,7 @@ use Idsign\Permission\Exceptions\SectionAlreadyExists;
 use Idsign\Permission\Contracts\Section as SectionContract;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use function Idsign\Permission\Helpers\getModelForGuard;
 
 class Section extends Model implements SectionContract
 {
