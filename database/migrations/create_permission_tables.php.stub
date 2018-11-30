@@ -72,6 +72,7 @@ class CreatePermissionTables extends Migration
             $table->integer('permission_id')->unsigned();
             $table->integer('section_id')->unsigned();
             $table->integer('container_id')->unsigned();
+            $table->boolean('enabled')->default(true);
             $table->morphs('model');
 
             $table->foreign('permission_id')

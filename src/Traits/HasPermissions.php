@@ -4,10 +4,7 @@ namespace Idsign\Permission\Traits;
 
 use Illuminate\Support\Collection;
 use Idsign\Permission\PermissionRegistrar;
-use Idsign\Permission\Contracts\{
-    Permission,
-    Section
-};
+use Idsign\Permission\Contracts\{Container, Permission, Section};
 use Idsign\Permission\Exceptions\GuardDoesNotMatch;
 
 trait HasPermissions
@@ -17,14 +14,15 @@ trait HasPermissions
      *
      * @param string|array|\Idsign\Permission\Contracts\Permission|\Illuminate\Support\Collection $permissions
      * @param string|\Idsign\Permission\Contracts\Section $section
+     * @param string|\Idsign\Permission\Contracts\Container $container
+     * @param boolean|array
      *
      * @return $this
      */
-    public function givePermissionTo($permissions, $section)
+    public function givePermissionTo($permissions, $section, $container, $flags = true)
     {
-        if (is_string($section)) {
-            $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
-        }
+        $section = $this->resolveClass($section, Section::class);
+        $container = $this->resolveClass($container, Container::class);
 
         $permissions = collect([$permissions])
             ->flatten()
@@ -36,8 +34,25 @@ trait HasPermissions
             })
             ->all();
 
-        foreach($permissions as $permission){
-            $this->permissions()->save($permission, ['section_id' => $section->id]);
+        $flagsArray = is_array($flags) ? $flags : [];
+        if(is_bool($flags)){
+            foreach ($permissions as $key => $value){
+                $flagsArray[] = $flags;
+            }
+        }
+
+        if(count($flagsArray) < count($permissions)){
+            for($i = count($flagsArray); $i < count($permissions); $i++){
+                $flagsArray[$i] = false;
+            }
+        }
+
+        foreach($permissions as $key => $permission){
+            $this->permissions()->save($permission, [
+                'section_id' => $section->id,
+                'container_id' => $container->id,
+                'enabled' => $flagsArray[$key]
+            ]);
         }
 
         $this->forgetCachedPermissions();
@@ -46,39 +61,60 @@ trait HasPermissions
     }
 
     /**
+     * @param mixed $name
+     * @param string $class
+     * @return mixed
+     */
+    protected function resolveClass($name, $class)
+    {
+        if (is_string($name)) {
+            $name = app($class)->findByName($name, $this->getDefaultGuardName());
+        }
+
+        return $name;
+    }
+
+    /**
      * Remove all current permissions and set the given ones.
      *
      * @param string|array|\Idsign\Permission\Contracts\Permission|\Illuminate\Support\Collection $permissions
      * @param string|\Idsign\Permission\Contracts\Section $section
+     * @param string|\Idsign\Permission\Contracts\Container $container
+     * @param boolean|array
      *
      * @return $this
      */
-    public function syncPermissions($permissions, $section)
+    public function syncPermissions($permissions, $section, $container, $flags = true)
     {
-        if (is_string($section)) {
-            $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
-        }
+        $section = $this->resolveClass($section, Section::class);
+        $container = $this->resolveClass($container, Container::class);
 
-        $this->permissions()->wherePivot('section_id', '=',$section->id)->detach();
+        $this->permissions()
+             ->wherePivot('section_id', '=', $section->id)
+             ->wherePivot('container_id', '=', $container->id)
+             ->detach();
 
-        return $this->givePermissionTo($permissions, $section);
+        return $this->givePermissionTo($permissions, $section, $container, $flags);
     }
 
     /**
      * Revoke the given permission.
      *
-     * @param \Idsign\Permission\Contracts\Permission|string $permission
+     * @param array|\Idsign\Permission\Contracts\Permission|string $permissions
      * @param string|\Idsign\Permission\Contracts\Section $section
+     * @param string|\Idsign\Permission\Contracts\Container $container
      *
      * @return $this
      */
-    public function revokePermissionTo($permission, $section)
+    public function revokePermissionTo($permissions, $section, $container)
     {
-        if (is_string($section)) {
-            $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
-        }
+        $section = $this->resolveClass($section, Section::class);
+        $container = $this->resolveClass($container, Container::class);
 
-        $this->permissions()->wherePivot('section_id', '=', $section->id)->detach($this->getStoredPermission($permission));
+        $this->permissions()
+             ->wherePivot('section_id', '=', $section->id)
+             ->wherePivot('container_id', '=', $container->id)
+             ->detach($this->getStoredPermission($permissions));
 
         $this->forgetCachedPermissions();
 
@@ -92,18 +128,17 @@ trait HasPermissions
      */
     protected function getStoredPermission($permissions)
     {
-        if (is_string($permissions)) {
-            return app(Permission::class)->findByName($permissions, $this->getDefaultGuardName());
-        }
-
         if (is_array($permissions)) {
-            return app(Permission::class)
+            return collect($permissions)->map(function ($permission) {
+                return $this->resolveClass($permission, Permission::class);
+            });
+            /*return app(Permission::class)
                 ->whereIn('name', $permissions)
                 ->where('guard_name', $this->getGuardNames())
-                ->get();
+                ->get();*/
         }
 
-        return $permissions;
+        return $this->resolveClass($permissions, Permission::class);
     }
 
     /**

@@ -15,7 +15,7 @@ interface Role
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function permissions(): BelongsToMany;
+    public function permissions($sectionId = null, $containerId = null, $permissionId = null): BelongsToMany;
 
     /**
      * Find a role by its name and guard name.

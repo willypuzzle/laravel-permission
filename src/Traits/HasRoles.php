@@ -2,11 +2,7 @@
 
 namespace Idsign\Permission\Traits;
 
-use Idsign\Permission\Contracts\{
-    Permission,
-    Role,
-    Section
-};
+use Idsign\Permission\Contracts\{Container, Permission, Role, Section};
 use Idsign\Permission\Exceptions\RoleDoesNotExist;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
@@ -66,43 +62,54 @@ trait HasRoles
     /**
      * A model may have multiple direct permissions.
      */
-    public function permissions(): MorphToMany
+    public function permissions($sectionId = null, $containerId = null, $permissionId = null): MorphToMany
     {
-        return $this->morphToMany(
+        $relation =  $this->morphToMany(
             config('permission.models.permission'),
             'model',
             config('permission.table_names.model_has_permissions'),
             'model_id',
             'permission_id'
-        );
+        )->withPivot(['enabled']);
+
+        if($sectionId){
+            $relation = $relation->wherePivot('section_id', '=', $sectionId);
+        }
+
+        if($containerId){
+            $relation = $relation->wherePivot('container_id', '=', $containerId);
+        }
+
+        if($permissionId){
+            $relation = $relation->wherePivot('permission_id', '=', $permissionId);
+        }
+
+        return $relation;
     }
 
-    /**
-     * A model may have multiple roles.
-     */
-    public function sections_from_roles(): MorphToMany
+    public function sections_from_permissions($containerId = null, $permissionId = null, $sectionId = null): MorphToMany
     {
-        return $this->morphToMany(
-            config('permission.models.section'),
-            'model',
-            config('permission.table_names.role_has_permissions'),
-            'model_id',
-            'section_id'
-        );
-    }
-
-    /**
-     * A model may have multiple direct permissions.
-     */
-    public function sections_from_permissions(): MorphToMany
-    {
-        return $this->morphToMany(
+        $relation = $this->morphToMany(
             config('permission.models.section'),
             'model',
             config('permission.table_names.model_has_permissions'),
             'model_id',
             'section_id'
         );
+
+        if($containerId){
+            $relation = $relation->wherePivot('container_id', '=', $containerId);
+        }
+
+        if($permissionId){
+            $relation = $relation->wherePivot('permission_id', '=', $permissionId);
+        }
+
+        if($sectionId){
+            $relation = $relation->wherePivot('section_id', '=', $sectionId);
+        }
+
+        return $relation;
     }
 
     /**
@@ -124,11 +131,7 @@ trait HasRoles
         }
 
         $roles = array_map(function ($role) {
-            if ($role instanceof Role) {
-                return $role;
-            }
-
-            return app(Role::class)->findByName($role, $this->getDefaultGuardName());
+            return $this->resolveClass($role, Role::class);
         }, $roles);
 
         return $query->whereHas('roles', function ($query) use ($roles) {
@@ -265,10 +268,7 @@ trait HasRoles
 
         if (is_string($roles)) {
             try{
-                $roles = app(Role::class)->findByName(
-                    $roles,
-                    $guardName ?? $this->getDefaultGuardName()
-                );
+                $roles = $this->resolveClass($roles, Role::class);
             }catch (RoleDoesNotExist $ex){
                 return false;
             }
@@ -362,37 +362,26 @@ trait HasRoles
      *
      * @param string|\Idsign\Permission\Contracts\Permission $permission
      * @param string|\Idsign\Permission\Contracts\Section $section
-     * @param string|null $guardName
+     * @param string|\Idsign\Permission\Contracts\Container $container
+     * @param boolean $checkEnabled
      *
      * @return bool
      */
-    public function hasPermissionTo($permission, $section, $guardName = null, $checkEnabled = true): bool
+    public function hasPermissionTo($permission, $section, $container, $checkEnabled = true): bool
     {
         if($checkEnabled && !$this->isEnabled()){
             return false;
-        }
-
-        if (is_string($permission)) {
-            $permission = app(Permission::class)->findByName(
-                $permission,
-                $guardName ?? $this->getDefaultGuardName()
-            );
-        }
-
-        if (is_string($section)) {
-            $section = app(Section::class)->findByName(
-                $section,
-                $guardName ?? $this->getDefaultGuardName()
-            );
         }
 
         if($checkEnabled && $section->state != Section::ENABLED){
             return false;
         }
 
+        if($checkEnabled && $container->state != Section::ENABLED){
+            return false;
+        }
 
-
-        return $this->hasDirectPermission($permission, $section, $checkEnabled) || $this->hasPermissionViaRole($permission, $section, $checkEnabled);
+        return $this->hasDirectPermission($permission, $section, $container, $checkEnabled) || $this->hasPermissionViaRole($permission, $section, $container, $checkEnabled);
     }
 
     /**
@@ -402,10 +391,14 @@ trait HasRoles
      *
      * @return bool
      */
-    public function hasAnyPermission(array $permissions, string $section, $checkEnabled = true): bool
+    public function hasAnyPermission(array $permissions, $section, $container, $checkEnabled = true): bool
     {
+        if(empty($permissions)){
+            return true;
+        }
+
         foreach ($permissions as $permission) {
-            if ($this->hasPermissionTo($permission, $section, $checkEnabled)) {
+            if ($this->hasPermissionTo($permission, $section, $container, $checkEnabled)) {
                 return true;
             }
         }
@@ -413,39 +406,49 @@ trait HasRoles
         return false;
     }
 
+    public function hasAllPermissions(array $permissions, $section, $container, $checkEnabled = true)
+    {
+        foreach ($permissions as $permission) {
+            if (!$this->hasPermissionTo($permission, $section, $container, $checkEnabled)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
      * Determine if the model has, via roles, the given permission.
      *
-     * @param \Idsign\Permission\Contracts\Permission $permission
+     * @param string|\Idsign\Permission\Contracts\Permission $permission
+     * @param string|\Idsign\Permission\Contracts\Section $section
+     * @param string|\Idsign\Permission\Contracts\Container $container
+     * @param boolean $checkEnabled
      *
      * @return bool
      */
-    protected function hasPermissionViaRole(Permission $permission, $section, $checkEnabled = true): bool
+    protected function hasPermissionViaRole($permission, $section, $container, $checkEnabled = true): bool
     {
         if($checkEnabled && !$this->isEnabled()){
             return false;
         }
 
-        if($checkEnabled && $permission->state != Permission::ENABLED){
+        $permission = $this->resolveClass($permission, Permission::class);
+        $section = $this->resolveClass($section, Section::class);
+        $container = $this->resolveClass($container, Container::class);
+
+        if(!$permission || !$section || !$container){
             return false;
         }
 
-        if (is_string($section)) {
-            $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
-
-            if (! $section) {
-                return false;
-            }
-        }
-
-        if($checkEnabled && $section->state != Section::ENABLED){
+        if($checkEnabled && ($permission->state != Permission::ENABLED || $section->state != Section::ENABLED || $container->state != Container::ENABLED)){
             return false;
         }
 
         if($checkEnabled){
-            return $this->hasRole($permission->roles()->where('state', Role::ENABLED)->wherePivot('section_id', '=', $section->id)->get(), $checkEnabled);
+            return $this->hasRole($permission->roles($section->id, $container->id, null)->where('state', Role::ENABLED)->get(), $checkEnabled);
         }else{
-            return $this->hasRole($permission->roles()->wherePivot('section_id', '=', $section->id)->get(), $checkEnabled);
+            return $this->hasRole($permission->roles($section->id, $container->id, null)->get(), $checkEnabled);
         }
     }
 
@@ -457,65 +460,53 @@ trait HasRoles
      *
      * @return bool
      */
-    public function hasDirectPermission($permission, $section, $checkEnabled = true): bool
+    public function hasDirectPermission($permission, $section, $container, $checkEnabled = true): bool
     {
         if($checkEnabled && !$this->isEnabled()){
             return false;
         }
 
-        if (is_string($permission)) {
-            $permission = app(Permission::class)->findByName($permission, $this->getDefaultGuardName());
+        $permission = $this->resolveClass($permission, Permission::class);
+        $section = $this->resolveClass($section, Section::class);
+        $container = $this->resolveClass($container, Container::class);
 
-            if (! $permission) {
-                return false;
-            }
-        }
-
-        if (is_string($section)) {
-            $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
-
-            if (! $section) {
-                return false;
-            }
-        }
-
-        if($checkEnabled && $section->state != Section::ENABLED){
+        if (!$permission || !$section || !$container) {
             return false;
         }
 
-        $permission = $this->permissions()
-                        ->wherePivot('permission_id', '=', $permission->id)
-                        ->wherePivot('section_id', '=', $section->id)
-                        ->first();
+        if($checkEnabled && ($section->state != Section::ENABLED || $container->state != Container::ENABLED || $permission->state != Permission::ENABLED)){
+            return false;
+        }
 
-        return ($permission !== NULL) && ($checkEnabled ? $permission->state == Permission::ENABLED : true);
+        $permission = $this->permissions($section->id, $container->id, $permission->id)->first();
+
+        return ($permission !== null && $permission->pivot->enabled);
     }
 
     /**
      * @param string|\Idsign\Permission\Contracts\Section $section
+     * @param string|Container $container
+     * @param boolean $checkEnabled
      *
      * Return all permissions the directory coupled to the model.
      */
-    public function getDirectPermissions($section, $checkEnabled = true): Collection
+    public function getDirectPermissions($section, $container, $checkEnabled = true): Collection
     {
-        if (is_string($section)) {
-            $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
-        }
+        $section = $this->resolveClass($section, Section::class);
+        $container = $this->resolveClass($container, Container::class);
 
-        if($checkEnabled && (!$this->isEnabled() || $section->state != Section::ENABLED)){
+        if($checkEnabled && (!$this->isEnabled() || !$section || !$container || $section->state != Section::ENABLED || $container->state != Container::ENABLED)){
             return collect([]);
         }
 
+        $relation = $this->permissions($section->id, $container->id);
+
         if($checkEnabled){
-            return $this->permissions()
-                ->where('state', Permission::ENABLED)
-                ->wherePivot('section_id', '=', $section->id)
-                ->get();
-        }else{
-            return $this->permissions()
-                ->wherePivot('section_id', '=', $section->id)
-                ->get();
+            $relation = $relation->where('state', Permission::ENABLED);
+
         }
+
+        return $relation->get();
     }
 
 //    /**
@@ -534,42 +525,45 @@ trait HasRoles
 
     /**
      * @param string|\Idsign\Permission\Contracts\Section $section
+     * @param string|Container $container
+     * @param boolean $checkEnabled
      *
      * Return all the permissions the model has via roles.
      */
-    public function getPermissionsViaRoles($section, $checkEnabled = true): Collection
+    public function getPermissionsViaRoles($section, $container, $checkEnabled = true): Collection
     {
         if (is_string($section)) {
             $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
         }
 
-        if($checkEnabled && (!$this->isEnabled() || $section->state != Section::ENABLED)){
+        $section = $this->resolveClass($section, Section::class);
+        $container = $this->resolveClass($container, Container::class);
+
+        if($checkEnabled && (!$this->isEnabled() || !$section || !$container || $section->state != Section::ENABLED || $container->state != Container::ENABLED)){
             return collect([]);
         }
 
         return $this->load('roles', 'roles.permissions')
             ->roles->filter(function ($role) use ($checkEnabled){
                 return $checkEnabled ? $role->state == Role::ENABLED : true;
-            })->flatMap(function ($role) use ($section){
-                return $role->permissions()->wherePivot('section_id', '=', $section->id)->get();
-            })->filter(function ($permission){
-                return $permission == Permission::ENABLED;
+            })->flatMap(function (Role $role) use ($section, $container){
+                return $role->permissions($section->id, $container->id)->get();
+            })->filter(function ($permission) use ($checkEnabled){
+                return $checkEnabled ? $permission->state == Permission::ENABLED : true;
             })->sort()->values();
     }
 
     /**
      * @param string|\Idsign\Permission\Contracts\Section $section
+     * @param string|Container $container
+     * @param boolean $checkEnabled
      *
      * Return all the permissions the model has, both directly and via roles.
      */
-    public function getAllPermissions($section, $checkEnabled = true): Collection
+    public function getAllPermissions($section, $container, $checkEnabled = true): Collection
     {
-        if (is_string($section)) {
-            $section = app(Section::class)->findByName($section, $this->getDefaultGuardName());
-        }
-
-        return $this->getDirectPermissions($section, $checkEnabled)
-            ->merge($this->getPermissionsViaRoles($section, $checkEnabled))
+        return $this->getDirectPermissions($section, $container, $checkEnabled)
+            ->merge($this->getPermissionsViaRoles($section, $container, $checkEnabled))
             ->sort()
             ->values();
     }
@@ -589,11 +583,7 @@ trait HasRoles
 
     protected function getStoredRole($role): Role
     {
-        if (is_string($role)) {
-            return app(Role::class)->findByName($role, $this->getDefaultGuardName());
-        }
-
-        return $role;
+        return $this->resolveClass($role, Role::class);
     }
 
     protected function convertPipeToArray(string $pipeString)

@@ -79,7 +79,7 @@ class BladeTest extends TestCase
     {
         $user = $this->getWriter();
 
-        $user->givePermissionTo('edit-articles', 'blog');
+        $user->givePermissionTo('edit-articles', 'blog', 'idsign');
 
         auth()->setUser($user);
 

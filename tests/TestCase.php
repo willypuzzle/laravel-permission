@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Test;
 
+use Idsign\Permission\Contracts\Container;
 use Monolog\Handler\TestHandler;
 use Idsign\Permission\Contracts\Role;
 use Illuminate\Database\Schema\Blueprint;
@@ -129,6 +130,9 @@ abstract class TestCase extends Orchestra
 
         $app[Section::class]->create(['name' => 'blog']);
         $app[Section::class]->create(['name' => 'blog', 'guard_name' => 'admin']);
+
+        $app[Container::class]->create(['name' => 'idsign']);
+        $app[Container::class]->create(['name' => 'idsign', 'guard_name' => 'admin']);
     }
 
     /**

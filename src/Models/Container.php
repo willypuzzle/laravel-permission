@@ -2,8 +2,11 @@
 
 namespace Idsign\Permission\Models;
 
+use Idsign\Permission\Exceptions\ContainerDoesNotExist;
+use Idsign\Permission\PermissionRegistrar;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Collection;
 use Willypuzzle\Helpers\Facades\General\Database;
 use Idsign\Permission\Contracts\Container as ContainerInterface;
 
@@ -18,6 +21,27 @@ class Container extends Model implements ContainerInterface
         parent::__construct($attributes);
 
         $this->setTable(config('permission.table_names.containers'));
+    }
+
+    public static function findByName(string $name, $guardName = null): ContainerInterface
+    {
+        $guardName = $guardName ?? config('auth.defaults.guard');
+
+        $container = static::getContainers()->where('name', $name)->where('guard_name', $guardName)->first();
+
+        if (!$container) {
+            throw ContainerDoesNotExist::create($name, $guardName);
+        }
+
+        return $container;
+    }
+
+    /**
+     * Get the current cached permissions.
+     */
+    protected static function getContainers(): Collection
+    {
+        return app(PermissionRegistrar::class)->getContainers();
     }
 
     public static function boot()

@@ -67,12 +67,30 @@ class Role extends Model implements RoleContract
     /**
      * A role may be given various permissions.
      */
-    public function permissions(): BelongsToMany
+    public function permissions($sectionId = null, $containerId = null, $permissionId = null): BelongsToMany
     {
-        return $this->belongsToMany(
+        $relation =  $this->belongsToMany(
             config('permission.models.permission'),
-            config('permission.table_names.role_has_permissions')
+            config('permission.table_names.role_has_permissions'),
+            'role_id',
+            'permission_id',
+            'id',
+            'id'
         );
+
+        if($sectionId){
+            $relation = $relation->wherePivot('section_id', '=', $sectionId);
+        }
+
+        if($containerId){
+            $relation = $relation->wherePivot('container_id', '=', $containerId);
+        }
+
+        if($permissionId){
+            $relation = $relation->wherePivot('permission_id', '=', $permissionId);
+        }
+
+        return $relation;
     }
 
     /**
