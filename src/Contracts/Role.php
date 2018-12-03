@@ -36,7 +36,9 @@ interface Role
      *
      * @param string|\Idsign\Permission\Contracts\Section $section
      *
+     * @param string|\Idsign\Permission\Contracts\Container $container
+     *
      * @return bool
      */
-    public function hasPermissionTo($permission, $section): bool;
+    public function hasPermissionTo($permission, $section, $container, $checkEnabled = true): bool;
 }

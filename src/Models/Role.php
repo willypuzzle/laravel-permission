@@ -8,6 +8,9 @@ use Idsign\Permission\Exceptions\RoleDoesNotExist;
 use Idsign\Permission\Exceptions\GuardDoesNotMatch;
 use Idsign\Permission\Exceptions\RoleAlreadyExists;
 use Idsign\Permission\Contracts\Role as RoleContract;
+use Idsign\Permission\Contracts\Permission as PermissionContract;
+use Idsign\Permission\Contracts\Container as ContainerContract;
+use Idsign\Permission\Contracts\Section as SectionContract;
 use Idsign\Permission\Traits\RefreshesPermissionCache;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -134,32 +137,24 @@ class Role extends Model implements RoleContract
     /**
      * Determine if the user may perform the given permission.
      *
-     * @param string|Permission $permission
+     * @param string|PermissionContract $permission
      *
-     * @param string|Permission $section
+     * @param string|SectionContract $section
+     *
+     * @param string|ContainerContract $container
      *
      * @return bool
      *
      * @throws \Idsign\Permission\Exceptions\GuardDoesNotMatch
      */
-    public function hasPermissionTo($permission, $section, $checkEnabled = true): bool
+    public function hasPermissionTo($permission, $section, $container, $checkEnabled = true): bool
     {
-        $guard = $this->getDefaultGuardName();
+        $permission = $this->resolveClass($permission, PermissionContract::class);
+        $section = $this->resolveClass($section, SectionContract::class);
+        $container = $this->resolveClass($container, ContainerContract::class);
 
-        if (is_string($permission)) {
-            $permission = app(Permission::class)->findByName($permission, $guard);
-        }
-
-        if (! $this->getGuardNames()->contains($permission->guard_name)) {
-            throw GuardDoesNotMatch::create($permission->guard_name, $this->getGuardNames());
-        }
-
-        if (is_string($section)){
-            $section = app(Section::class)->findByName($section, $guard);
-        }
-
-        if (! $this->getGuardNames()->contains($section->guard_name)) {
-            throw GuardDoesNotMatch::create($section->guard_name, $this->getGuardNames());
+        if(!$permission || !$section || !$container){
+            return false;
         }
 
         if($checkEnabled && $this->state !== RoleContract::ENABLED){
@@ -167,9 +162,9 @@ class Role extends Model implements RoleContract
         }
 
         if(!$checkEnabled){
-            return count($this->permissions()->wherePivot('permission_id', '=', $permission->id)->wherePivot('section_id', '=', $section->id)->get()->all()) > 0;
+            return $this->permissions($section->id, $container->id, $permission->id)->count() > 0;
         }else{
-            return count($this->permissions()->where('state', RoleContract::ENABLED)->wherePivot('permission_id', '=', $permission->id)->wherePivot('section_id', '=', $section->id)->get()->all()) > 0;
+            return $this->permissions($section->id, $container->id, $permission->id)->where('state', RoleContract::ENABLED)->count() > 0;
         }
 
     }
@@ -178,7 +173,7 @@ class Role extends Model implements RoleContract
         return true;
     }
 
-    public function scopeEnabled($query, $state = \Idsign\Permission\Contracts\Role::ENABLED)
+    public function scopeEnabled($query, $state = RoleContract::ENABLED)
     {
         return $query->where('state', $state);
     }

@@ -12,6 +12,7 @@ use Idsign\Permission\Contracts\Section as SectionContract;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use function Idsign\Permission\Helpers\getModelForGuard;
+use Willypuzzle\Helpers\Facades\General\Database;
 
 class Section extends Model implements SectionContract
 {
@@ -65,56 +66,103 @@ class Section extends Model implements SectionContract
         return static::query()->create($attributes);
     }
 
-    public function users_from_roles(): BelongsToMany
+    /*public function users_from_roles(): BelongsToMany
     {
         return $this->belongsToMany(
             getModelForGuard($this->attributes['guard_name']),
             config('permission.table_names.role_has_permissions')
         );
-    }
+    }*/
 
-    public function users_from_permissions(): MorphToMany
+    public function users_from_permissions($containerId = null, $permissionId = null): MorphToMany
     {
-        return $this->morphedByMany(
+        $relation = $this->morphedByMany(
             getModelForGuard($this->attributes['guard_name']),
             'model',
             config('permission.table_names.model_has_permissions'),
             'section_id',
             'model_id'
-        );
+        )->withPivot(['enabled']);
+
+        if($containerId){
+            $relation = $relation->wherePivot('container_id', '=', $containerId);
+        }
+
+        if($permissionId){
+            $relation = $relation->wherePivot('permission_id', '=', $permissionId);
+        }
+
+        return $relation;
     }
 
     /**
      * A permission can be applied to roles.
      */
-    public function roles(): BelongsToMany
+    public function roles($containerId = null, $permissionId = null): BelongsToMany
     {
-        return $this->belongsToMany(
+        $relation = $this->belongsToMany(
             config('permission.models.role'),
-            config('permission.table_names.role_has_permissions')
+            config('permission.table_names.role_has_permissions'),
+            'section_id',
+            'role_id'
         );
+
+        if($containerId){
+            $relation = $relation->wherePivot('container_id', '=', $containerId);
+        }
+
+        if($permissionId){
+            $relation = $relation->wherePivot('permission_id', '=', $permissionId);
+        }
+
+        return $relation;
     }
 
     /**
      * A role may be given various permissions.
      */
-    public function permissions_from_roles(): BelongsToMany
+    public function permissions_from_roles($containerId = null, $roleId = null): BelongsToMany
     {
-        return $this->belongsToMany(
+        $relation =  $this->belongsToMany(
             config('permission.models.permission'),
-            config('permission.table_names.role_has_permissions')
+            config('permission.table_names.role_has_permissions'),
+            'section_id',
+            'permission_id'
         );
+
+        if($containerId){
+            $relation = $relation->wherePivot('container_id', '=', $containerId);
+        }
+
+        if($roleId){
+            $relation = $relation->wherePivot('role_id', '=', $roleId);
+        }
+
+        return $relation;
     }
 
     /**
      * A role may be given various permissions.
      */
-    public function permissions_from_users(): BelongsToMany
+    public function permissions_from_users($containerId = null, $userId = null): BelongsToMany
     {
-        return $this->belongsToMany(
+        $relation = $this->belongsToMany(
             config('permission.models.permission'),
-            config('permission.table_names.model_has_permissions')
-        );
+            config('permission.table_names.model_has_permissions'),
+            'section_id',
+            'permission_id'
+        )->withPivot(['enabled']);
+
+        if($containerId){
+            $relation = $relation->wherePivot('container_id', '=', $containerId);
+        }
+
+        if($userId){
+            $relation = $relation->wherePivot('model_id', $userId)
+                ->wherePivot('model_type', Database::getMorphedModelInverse(config('permission.user.model.'.$this->guard_name.'.model')));
+        }
+
+        return $relation;
     }
 
     /**
@@ -152,7 +200,7 @@ class Section extends Model implements SectionContract
         return true;
     }
 
-    public function scopeEnabled($query, $state = \Idsign\Permission\Contracts\Section::ENABLED)
+    public function scopeEnabled($query, $state = SectionContract::ENABLED)
     {
         return $query->where('state', $state);
     }
@@ -162,13 +210,25 @@ class Section extends Model implements SectionContract
         return $this->belongsTo(config('permission.models.section'), 'section_id');
     }
 
-    public function childrens()
+    public function childrens($onlyEnabled = true)
     {
-        return $this->hasMany(config('permission.models.section'), 'section_id');
+        $relation = $this->hasMany(config('permission.models.section'), 'section_id');
+
+        if($onlyEnabled){
+            $relation = $relation->where('state',SectionContract::ENABLED);
+        }
+
+        return $relation;
     }
 
-    public function tree()
+    public static function tree($guardName, $onlyEnabled = true) : Collection
     {
+        $query = static::where('guard_name', $guardName)->where('section_id', null);
 
+        if($onlyEnabled){
+            $query = $query->where('state', SectionContract::ENABLED);
+        }
+
+        return $query->get();
     }
 }
