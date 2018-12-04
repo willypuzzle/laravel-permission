@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Models;
 
+use Idsign\Permission\Exceptions\ContainerAlreadyExists;
 use Idsign\Permission\Exceptions\ContainerDoesNotExist;
 use Idsign\Permission\PermissionRegistrar;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,21 @@ class Container extends Model implements ContainerInterface
         parent::__construct($attributes);
 
         $this->setTable(config('permission.table_names.containers'));
+    }
+
+    public static function create(array $attributes = [])
+    {
+        $attributes['guard_name'] = $attributes['guard_name'] ?? config('auth.defaults.guard');
+
+        if (static::where('name', $attributes['name'])->where('guard_name', $attributes['guard_name'])->first()) {
+            throw ContainerAlreadyExists::create($attributes['name'], $attributes['guard_name']);
+        }
+
+        if (app()::VERSION < '5.4') {
+            return parent::create($attributes);
+        }
+
+        return static::query()->create($attributes);
     }
 
     public static function findByName(string $name, $guardName = null): ContainerInterface

@@ -13,17 +13,17 @@ class HasPermissionsTest extends TestCase
     /** @test */
     public function it_can_assign_a_permission_to_a_user()
     {
-        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
 
         $this->refreshTestUser();
 
-        $this->assertTrue($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+        $this->assertTrue($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer));
     }
 
     /** @test */
     public function it_doesnt_allow_a_permission_to_a_user_when_user_is_disabled()
     {
-        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
 
         $stateField = config('permission.user.state.field_name');
 
@@ -33,13 +33,13 @@ class HasPermissionsTest extends TestCase
 
         $this->refreshTestUser();
 
-        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer));
     }
 
     /** @test */
     public function it_doesnt_allow_a_permission_to_a_user_when_role_is_disabled()
     {
-        $this->testUserRole->givePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->testUserRole->givePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
 
         $this->testUserRole->state = Role::DISABLED;
 
@@ -51,7 +51,7 @@ class HasPermissionsTest extends TestCase
 
         $this->refreshTestUser();
 
-        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer));
     }
 
     /** @test */
@@ -61,7 +61,7 @@ class HasPermissionsTest extends TestCase
 
         $this->testUserPermission->save();
 
-        $this->testUserRole->givePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->testUserRole->givePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
 
         $this->testUser->syncRoles($this->testUserRole);
 
@@ -69,7 +69,7 @@ class HasPermissionsTest extends TestCase
 
         $this->refreshTestUser();
 
-        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer));
     }
 
     /** @test */
@@ -79,17 +79,17 @@ class HasPermissionsTest extends TestCase
 
         $this->testUserPermission->save();
 
-        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
 
         $this->refreshTestUser();
 
-        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer));
     }
 
     /** @test */
     public function it_doesnt_allow_a_permission_to_a_user_when_section_is_disabled()
     {
-        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
 
         $this->testUserSection->state = Section::DISABLED;
 
@@ -97,7 +97,7 @@ class HasPermissionsTest extends TestCase
 
         $this->refreshTestUser();
 
-        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer));
     }
 
     /** @test */
@@ -105,7 +105,7 @@ class HasPermissionsTest extends TestCase
     {
         $this->expectException(PermissionDoesNotExist::class);
 
-        $this->testUser->givePermissionTo('permission-does-not-exist', 'blog');
+        $this->testUser->givePermissionTo('permission-does-not-exist', 'blog', 'idsign');
     }
 
     /** @test */
@@ -113,27 +113,27 @@ class HasPermissionsTest extends TestCase
     {
         $this->expectException(GuardDoesNotMatch::class);
 
-        $this->testUser->givePermissionTo($this->testAdminPermission, $this->testUserSection);
+        $this->testUser->givePermissionTo($this->testAdminPermission, $this->testUserSection, $this->testUserContainer);
 
         $this->expectException(PermissionDoesNotExist::class);
 
-        $this->testUser->givePermissionTo('admin-permission', 'blog');
+        $this->testUser->givePermissionTo('admin-permission', 'blog', 'idsign');
     }
 
     /** @test */
     public function it_can_revoke_a_permission_from_a_user()
     {
-        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
 
         $this->refreshTestUser();
 
-        $this->assertTrue($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+        $this->assertTrue($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer));
 
-        $this->testUser->revokePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->testUser->revokePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
 
         $this->refreshTestUser();
 
-        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection));
+        $this->assertFalse($this->testUser->hasPermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer));
     }
 
 //    /** @test */
@@ -240,11 +240,11 @@ class HasPermissionsTest extends TestCase
     public function it_doesnt_detach_permissions_when_soft_deleting()
     {
         $user = SoftDeletingUser::create(['email' => 'test@example.com']);
-        $user->givePermissionTo(['edit-news'], 'blog');
+        $user->givePermissionTo(['edit-news'], 'blog', 'idsign');
         $user->delete();
 
         $user = SoftDeletingUser::withTrashed()->find($user->id);
 
-        $this->assertTrue($user->hasPermissionTo('edit-news', 'blog'));
+        $this->assertTrue($user->hasPermissionTo('edit-news', 'blog', 'idsign'));
     }
 }

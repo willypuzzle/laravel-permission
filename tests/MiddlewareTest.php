@@ -120,11 +120,11 @@ class MiddlewareTest extends TestCase
     {
         Auth::login($this->testUser);
 
-        $this->testUser->givePermissionTo('edit-articles', 'blog');
+        $this->testUser->givePermissionTo('edit-articles', 'blog', 'idsign');
 
         $this->assertEquals(
             $this->runMiddleware(
-                $this->permissionMiddleware, 'edit-articles:blog'
+                $this->permissionMiddleware, 'edit-articles:blog,idsign'
             ), 200);
     }
 
@@ -133,16 +133,16 @@ class MiddlewareTest extends TestCase
     {
         Auth::login($this->testUser);
 
-        $this->testUser->givePermissionTo('edit-articles', 'blog');
+        $this->testUser->givePermissionTo('edit-articles', 'blog', 'idsign');
 
         $this->assertEquals(
             $this->runMiddleware(
-                $this->permissionMiddleware, 'edit-news:blog|edit-articles:blog'
+                $this->permissionMiddleware, 'edit-news:blog,idsign|edit-articles:blog,idsign'
             ), 200);
 
         $this->assertEquals(
             $this->runMiddleware(
-                $this->permissionMiddleware, ['edit-news:blog', 'edit-articles:blog']
+                $this->permissionMiddleware, ['edit-news:blog,idsign', 'edit-articles:blog,idsign']
             ), 200);
     }
 
@@ -151,11 +151,11 @@ class MiddlewareTest extends TestCase
     {
         Auth::login($this->testUser);
 
-        $this->testUser->givePermissionTo('edit-articles', 'blog');
+        $this->testUser->givePermissionTo('edit-articles', 'blog', 'idsign');
 
         $this->assertEquals(
             $this->runMiddleware(
-                $this->permissionMiddleware, 'edit-news:blog'
+                $this->permissionMiddleware, 'edit-news:blog,idsign'
             ), 403);
     }
 
@@ -166,7 +166,7 @@ class MiddlewareTest extends TestCase
 
         $this->assertEquals(
             $this->runMiddleware(
-                $this->permissionMiddleware, 'edit-articles:blog|edit-news:blog'
+                $this->permissionMiddleware, 'edit-articles:blog,idsign|edit-news:blog,idsign'
             ), 403);
     }
 
@@ -187,7 +187,7 @@ class MiddlewareTest extends TestCase
                     'name' => $permission
                 ]);
 
-                $this->testUser->givePermissionTo($permissionModel, $section);
+                $this->testUser->givePermissionTo($permissionModel, $section, 'idsign');
             }catch (PermissionAlreadyExists $ex){
 
             }
@@ -196,7 +196,7 @@ class MiddlewareTest extends TestCase
         foreach ($routes as $route){
             $this->assertEquals(
                 $this->runMiddleware(
-                    $this->crudMiddleware, 'blogx', $route
+                    $this->crudMiddleware, 'blogx,idsign', $route
                 ), 200);
         }
     }
@@ -225,7 +225,7 @@ class MiddlewareTest extends TestCase
         foreach ($routes as $route){
             $this->assertEquals(
                 $this->runMiddleware(
-                    $this->crudMiddleware, 'blogx', $route
+                    $this->crudMiddleware, 'blogx,idsign', $route
                 ), 403);
         }
     }
@@ -254,7 +254,7 @@ class MiddlewareTest extends TestCase
         foreach ($routes as $route){
             $this->assertEquals(
                 $this->runMiddleware(
-                    $this->crudMiddleware, 'blogx', $route.".dummy"
+                    $this->crudMiddleware, 'blogx,idsign', $route.".dummy"
                 ), 200);
         }
     }
@@ -283,7 +283,7 @@ class MiddlewareTest extends TestCase
         foreach ($routes as $route){
             $this->assertEquals(
                 $this->runMiddleware(
-                    $this->crudMiddleware, 'blogx,not_nullable', $route.".dummy"
+                    $this->crudMiddleware, 'blogx,idsign,not_nullable', $route.".dummy"
                 ), 403);
         }
     }

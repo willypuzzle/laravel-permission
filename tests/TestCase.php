@@ -38,6 +38,12 @@ abstract class TestCase extends Orchestra
     /** @var \Idsign\Permission\Models\Section */
     protected $testAdminSection;
 
+    /** @var \Idsign\Permission\Models\Container */
+    protected $testUserContainer;
+
+    /** @var \Idsign\Permission\Models\Container */
+    protected $testAdminContainer;
+
     public function setUp()
     {
         parent::setUp();
@@ -48,11 +54,13 @@ abstract class TestCase extends Orchestra
         $this->testUserRole = app(Role::class)->find(1);
         $this->testUserPermission = app(Permission::class)->find(1);
         $this->testUserSection = app(Section::class)->find(1);
+        $this->testUserContainer = app(Container::class)->find(1);
 
         $this->testAdmin = Admin::first();
         $this->testAdminRole = app(Role::class)->find(3);
         $this->testAdminPermission = app(Permission::class)->find(3);
         $this->testAdminSection = app(Section::class)->find(2);
+        $this->testAdminContainer = app(Container::class)->find(2);
 
         $this->clearLogTestHandler();
     }

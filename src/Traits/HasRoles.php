@@ -373,14 +373,6 @@ trait HasRoles
             return false;
         }
 
-        if($checkEnabled && $section->state != Section::ENABLED){
-            return false;
-        }
-
-        if($checkEnabled && $container->state != Section::ENABLED){
-            return false;
-        }
-
         return $this->hasDirectPermission($permission, $section, $container, $checkEnabled) || $this->hasPermissionViaRole($permission, $section, $container, $checkEnabled);
     }
 
@@ -608,7 +600,7 @@ trait HasRoles
         return explode('|', trim($pipeString, $quoteCharacter));
     }
 
-    public function getPermissionsTree($checkEnabled = true) : array
+    public function getPermissionsTree($container, $checkEnabled = true) : array
     {
         if($checkEnabled && !$this->isEnabled()){
             return [];
@@ -628,7 +620,7 @@ trait HasRoles
 
         $result = [];
         foreach ($sections as $section){
-            $result[$section->name] = $this->parseCollectionForPermissionTree($this->getAllPermissions($section, true));
+            $result[$section->name] = $this->parseCollectionForPermissionTree($this->getAllPermissions($section, $container,$checkEnabled));
         }
 
         return $result;

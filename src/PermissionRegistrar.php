@@ -41,10 +41,10 @@ class PermissionRegistrar
         $this->gate->before(function (Authenticatable $user, string $ability, array $arguments) {
             try {
                 if (method_exists($user, 'hasPermissionTo')) {
-                    if(count($arguments) != 1){
+                    if(count($arguments) != 2){
                         throw MalformedArguments::create($arguments);
                     }
-                    return $user->hasPermissionTo($ability, $arguments[0]) ?: null;
+                    return $user->hasPermissionTo($ability, $arguments[0], $arguments[1]) ?: null;
                 }
             } catch (PermissionDoesNotExist $e) {
                 return null;

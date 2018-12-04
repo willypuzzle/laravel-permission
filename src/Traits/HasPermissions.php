@@ -4,7 +4,7 @@ namespace Idsign\Permission\Traits;
 
 use Illuminate\Support\Collection;
 use Idsign\Permission\PermissionRegistrar;
-use Idsign\Permission\Contracts\{Container, Permission, Section};
+use Idsign\Permission\Contracts\{Container, Permission, Role, Section};
 use Idsign\Permission\Exceptions\GuardDoesNotMatch;
 
 trait HasPermissions
@@ -48,11 +48,16 @@ trait HasPermissions
         }
 
         foreach($permissions as $key => $permission){
-            $this->permissions()->save($permission, [
+            $data = [
                 'section_id' => $section->id,
-                'container_id' => $container->id,
-                'enabled' => $flagsArray[$key]
-            ]);
+                'container_id' => $container->id
+            ];
+
+            if( !($this instanceof Role) ){
+                $data['enabled'] = $flagsArray[$key];
+            }
+
+            $this->permissions()->save($permission, $data);
         }
 
         $this->forgetCachedPermissions();

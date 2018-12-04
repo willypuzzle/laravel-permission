@@ -24,8 +24,7 @@ class PermissionMiddleware
             if(count($permission) != 2){
                 throw MalformedParameter::create($permissionx);
             }
-            $arguments = [];
-            $arguments[] = $permission[1];
+            $arguments = explode(',', $permission[1]);
             if (Auth::user()->can($permission[0], $arguments)) {
                 return $next($request);
             }

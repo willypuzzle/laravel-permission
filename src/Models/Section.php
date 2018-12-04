@@ -42,7 +42,7 @@ class Section extends Model implements SectionContract
                 return;
             }
 
-            $model->users_from_roles()->detach();
+            // $model->users_from_roles()->detach();
             $model->users_from_permissions()->detach();
 
             $model->roles()->detach();

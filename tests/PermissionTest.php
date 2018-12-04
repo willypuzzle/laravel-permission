@@ -4,6 +4,7 @@ namespace Idsign\Permission\Test;
 
 use Idsign\Permission\Contracts\Permission;
 use Idsign\Permission\Exceptions\PermissionAlreadyExists;
+use Idsign\Permission\Models\Container;
 use Idsign\Permission\Models\Section as SectionModel;
 use Idsign\Permission\Models\Permission as PermissionModel;
 use Idsign\Permission\Models\Role as RoleModel;
@@ -37,9 +38,9 @@ class PermissionTest extends TestCase
     /** @test */
     public function it_has_user_models_of_the_right_class()
     {
-        $this->testAdmin->givePermissionTo($this->testAdminPermission, $this->testAdminSection);
+        $this->testAdmin->givePermissionTo($this->testAdminPermission, $this->testAdminSection, $this->testAdminContainer);
 
-        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
 
         $this->assertCount(1, $this->testUserPermission->users);
         $this->assertTrue($this->testUserPermission->users->first()->is($this->testUser));
@@ -77,25 +78,27 @@ class PermissionTest extends TestCase
 
         $role2 = RoleModel::create(['name' => 'role2']);
 
-        $role1->givePermissionTo($permission3, $section3);
-        $role2->givePermissionTo($permission4_1, $section4);
-        $role2->givePermissionTo($permission4_2, $section4);
+        $container1 = Container::create(['name' => 'container1']);
+
+        $role1->givePermissionTo($permission3, $section3, $container1);
+        $role2->givePermissionTo($permission4_1, $section4, $container1);
+        $role2->givePermissionTo($permission4_2, $section4, $container1);
 
         $user = $this->testUser;
 
         $user->assignRole($role1, $role2);
 
-        $user->givePermissionTo($permission1_1, $section1);
-        $user->givePermissionTo($permission1_2, $section1);
-        $user->givePermissionTo($permission2, $section2);
+        $user->givePermissionTo($permission1_1, $section1, $container1);
+        $user->givePermissionTo($permission1_2, $section1, $container1);
+        $user->givePermissionTo($permission2, $section2, $container1);
 
-        $user->givePermissionTo($crossPermissionSec1_2, $section1);
-        $user->givePermissionTo($crossPermissionSec1_2, $section2);
+        $user->givePermissionTo($crossPermissionSec1_2, $section1, $container1);
+        $user->givePermissionTo($crossPermissionSec1_2, $section2, $container1);
 
-        $user->givePermissionTo($crossPermissionSec2_4, $section2);
-        $role2->givePermissionTo($crossPermissionSec2_4, $section4);
+        $user->givePermissionTo($crossPermissionSec2_4, $section2, $container1);
+        $role2->givePermissionTo($crossPermissionSec2_4, $section4, $container1);
 
-        $tree = $user->getPermissionsTree();
+        $tree = $user->getPermissionsTree('container1');
 
         $this->assertTrue(isset($tree['section1']['permission1.1']));
         $this->assertTrue(isset($tree['section1']['permission1.2']));
@@ -121,8 +124,11 @@ class PermissionTest extends TestCase
         $section = new SectionModel(['name' => 'bio']);
         $section->save();
 
-        $this->testUser->givePermissionTo($permission,$section);
-        $this->testUserRole->givePermissionTo($permission, $section);
+        $container = new Container(['name' => 'cic']);
+        $container->save();
+
+        $this->testUser->givePermissionTo($permission,$section,$container);
+        $this->testUserRole->givePermissionTo($permission, $section,$container);
 
         $permissionId = $permission->id;
 

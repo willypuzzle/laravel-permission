@@ -145,7 +145,7 @@ class HasRolesTest extends TestCase
         $user = User::create(['email' => 'user@test.com']);
 
         $user->assignRole('testRole');
-        $user->givePermissionTo('edit-articles', 'blog');
+        $user->givePermissionTo('edit-articles', 'blog', 'idsign');
 
         $this->assertDatabaseHas('model_has_permissions', ['model_id' => $user->id]);
         $this->assertDatabaseHas('model_has_roles', ['model_id' => $user->id]);
@@ -299,7 +299,7 @@ class HasRolesTest extends TestCase
     /** @test */
     public function it_can_determine_that_the_user_does_not_have_a_permission()
     {
-        $this->assertFalse($this->testUser->hasPermissionTo('edit-articles', 'blog'));
+        $this->assertFalse($this->testUser->hasPermissionTo('edit-articles', 'blog', 'idsign'));
     }
 
     /** @test */
@@ -307,7 +307,7 @@ class HasRolesTest extends TestCase
     {
         $this->expectException(PermissionDoesNotExist::class);
 
-        $this->testUser->hasPermissionTo('does-not-exist', 'blog');
+        $this->testUser->hasPermissionTo('does-not-exist', 'blog','idsign');
     }
 
     /** @test */
@@ -315,7 +315,7 @@ class HasRolesTest extends TestCase
     {
         $this->expectException(PermissionDoesNotExist::class);
 
-        $this->testUser->hasPermissionTo('admin-permission', 'blog');
+        $this->testUser->hasPermissionTo('admin-permission', 'blog','idsign');
     }
 
     /** @test */
@@ -323,101 +323,101 @@ class HasRolesTest extends TestCase
     {
         $user = new User();
 
-        $this->assertFalse($user->hasPermissionTo('edit-articles', 'blog'));
+        $this->assertFalse($user->hasPermissionTo('edit-articles', 'blog','idsign'));
     }
 
     /** @test */
     public function it_can_determine_that_the_user_has_any_of_the_permissions_directly()
     {
-        $this->assertFalse($this->testUser->hasAnyPermission(['edit-articles'], 'blog'));
+        $this->assertFalse($this->testUser->hasAnyPermission(['edit-articles'], 'blog','idsign'));
 
-        $this->testUser->givePermissionTo('edit-articles', 'blog');
-
-        $this->refreshTestUser();
-
-        $this->assertTrue($this->testUser->hasAnyPermission(['edit-news', 'edit-articles'], 'blog'));
-
-        $this->testUser->givePermissionTo('edit-news', 'blog');
+        $this->testUser->givePermissionTo('edit-articles', 'blog','idsign');
 
         $this->refreshTestUser();
 
-        $this->testUser->revokePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->assertTrue($this->testUser->hasAnyPermission(['edit-news', 'edit-articles'], 'blog','idsign'));
 
-        $this->assertTrue($this->testUser->hasAnyPermission(['edit-articles', 'edit-news'], 'blog'));
+        $this->testUser->givePermissionTo('edit-news', 'blog','idsign');
+
+        $this->refreshTestUser();
+
+        $this->testUser->revokePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
+
+        $this->assertTrue($this->testUser->hasAnyPermission(['edit-articles', 'edit-news'], 'blog','idsign'));
     }
 
     /** @test */
     public function it_can_determine_that_the_user_has_any_of_the_permissions_directly_using_an_array()
     {
-        $this->assertFalse($this->testUser->hasAnyPermission(['edit-articles'], 'blog'));
+        $this->assertFalse($this->testUser->hasAnyPermission(['edit-articles'], 'blog','idsign'));
 
-        $this->testUser->givePermissionTo('edit-articles', 'blog');
-
-        $this->refreshTestUser();
-
-        $this->assertTrue($this->testUser->hasAnyPermission(['edit-news', 'edit-articles'], 'blog'));
-
-        $this->testUser->givePermissionTo('edit-news', 'blog');
+        $this->testUser->givePermissionTo('edit-articles', 'blog','idsign');
 
         $this->refreshTestUser();
 
-        $this->testUser->revokePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->assertTrue($this->testUser->hasAnyPermission(['edit-news', 'edit-articles'], 'blog','idsign'));
 
-        $this->assertTrue($this->testUser->hasAnyPermission(['edit-articles', 'edit-news'], 'blog'));
+        $this->testUser->givePermissionTo('edit-news', 'blog','idsign');
+
+        $this->refreshTestUser();
+
+        $this->testUser->revokePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
+
+        $this->assertTrue($this->testUser->hasAnyPermission(['edit-articles', 'edit-news'], 'blog','idsign'));
     }
 
     /** @test */
     public function it_can_determine_that_the_user_has_any_of_the_permissions_via_role()
     {
-        $this->testUserRole->givePermissionTo('edit-articles', 'blog');
+        $this->testUserRole->givePermissionTo('edit-articles', 'blog','idsign');
 
         $this->testUser->assignRole('testRole');
 
-        $this->assertTrue($this->testUser->hasAnyPermission(['edit-news', 'edit-articles'], 'blog'));
+        $this->assertTrue($this->testUser->hasAnyPermission(['edit-news', 'edit-articles'], 'blog','idsign'));
     }
 
     /** @test */
     public function it_can_determine_that_user_has_direct_permission()
     {
-        $this->testUser->givePermissionTo('edit-articles', 'blog');
+        $this->testUser->givePermissionTo('edit-articles', 'blog','idsign');
         $this->refreshTestUser();
-        $this->assertTrue($this->testUser->hasDirectPermission('edit-articles', 'blog'));
-        $this->testUser->revokePermissionTo('edit-articles', 'blog');
+        $this->assertTrue($this->testUser->hasDirectPermission('edit-articles', 'blog','idsign'));
+        $this->testUser->revokePermissionTo('edit-articles', 'blog','idsign');
         $this->refreshTestUser();
-        $this->assertFalse($this->testUser->hasDirectPermission('edit-articles', 'blog'));
+        $this->assertFalse($this->testUser->hasDirectPermission('edit-articles', 'blog','idsign'));
 
         $this->testUser->assignRole('testRole');
-        $this->testUserRole->givePermissionTo('edit-articles', 'blog');
+        $this->testUserRole->givePermissionTo('edit-articles', 'blog','idsign');
         $this->refreshTestUser();
-        $this->assertFalse($this->testUser->hasDirectPermission('edit-articles', 'blog'));
+        $this->assertFalse($this->testUser->hasDirectPermission('edit-articles', 'blog','idsign'));
     }
 
     /** @test */
     public function it_can_list_all_the_permissions_via_his_roles()
     {
         $roleModel = app(Role::class);
-        $roleModel->findByName('testRole2')->givePermissionTo('edit-news', 'blog');
+        $roleModel->findByName('testRole2')->givePermissionTo('edit-news', 'blog', 'idsign');
 
-        $this->testUserRole->givePermissionTo('edit-articles', 'blog');
+        $this->testUserRole->givePermissionTo('edit-articles', 'blog','idsign');
         $this->testUser->assignRole('testRole', 'testRole2');
 
         $this->assertEquals(
             collect(['edit-articles', 'edit-news']),
-            $this->testUser->getPermissionsViaRoles('blog')->pluck('name')
+            $this->testUser->getPermissionsViaRoles('blog','idsign')->pluck('name')
         );
     }
 
     /** @test */
     public function it_can_list_all_the_coupled_permissions_both_directly_and_via_roles()
     {
-        $this->testUser->givePermissionTo('edit-news', 'blog');
+        $this->testUser->givePermissionTo('edit-news', 'blog','idsign');
 
-        $this->testUserRole->givePermissionTo('edit-articles', 'blog');
+        $this->testUserRole->givePermissionTo('edit-articles', 'blog','idsign');
         $this->testUser->assignRole('testRole');
 
         $this->assertEquals(
             collect(['edit-articles', 'edit-news']),
-            $this->testUser->getAllPermissions('blog')->pluck('name')
+            $this->testUser->getAllPermissions('blog','idsign')->pluck('name')
         );
     }
 

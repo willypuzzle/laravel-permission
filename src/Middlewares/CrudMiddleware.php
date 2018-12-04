@@ -19,15 +19,16 @@ class CrudMiddleware
 
         $arguments = explode(',', $argumentsx);
 
-        if(count($arguments) < 1){
+        if(count($arguments) < 2){
             throw MalformedParameter::create($argumentsx);
         }
 
         $section = $arguments[0];
+        $container = $arguments[1];
 
         $nullable = true;
-        if(count($arguments) > 1){
-            if($arguments[1] != 'nullable'){
+        if(count($arguments) > 2){
+            if($arguments[2] != 'nullable'){
                 $nullable = false;
             }
         }
@@ -41,7 +42,7 @@ class CrudMiddleware
                 return $next($request);
             }else if(!$nullable && $permission === null){
                 //not accepted
-            }else if (Auth::user()->can($permission, [$section])) {
+            }else if (Auth::user()->can($permission, [$section, $container])) {
                 return $next($request);
             }
         }

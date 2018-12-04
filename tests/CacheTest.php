@@ -107,7 +107,7 @@ class CacheTest extends TestCase
     /** @test */
     public function it_flushes_the_cache_when_giving_a_permission_to_a_role()
     {
-        $this->testUserRole->givePermissionTo($this->testUserPermission, $this->testUserSection);
+        $this->testUserRole->givePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
 
         $this->resetQueryCount();
 
@@ -119,21 +119,21 @@ class CacheTest extends TestCase
     /** @test */
     public function has_permission_to_should_use_the_cache()
     {
-        $this->testUserRole->givePermissionTo(['edit-articles', 'edit-news'], 'blog');
+        $this->testUserRole->givePermissionTo(['edit-articles', 'edit-news'], 'blog', 'idsign');
         $this->testUser->assignRole('testRole');
 
         $this->resetQueryCount();
 
-        $this->assertTrue($this->testUser->hasPermissionTo('edit-articles', 'blog'));
+        $this->assertTrue($this->testUser->hasPermissionTo('edit-articles', 'blog', 'idsign'));
 
         $this->assertQueryCount(self::QUERIES_PER_CACHE_PROVISION + 4); // + 4 for getting the User's relations
         $this->resetQueryCount();
 
-        $this->assertTrue($this->testUser->hasPermissionTo('edit-news', 'blog'));
+        $this->assertTrue($this->testUser->hasPermissionTo('edit-news', 'blog', 'idsign'));
 
         $this->assertQueryCount(3);//+ 2 for getting the User's relations
 
-        $this->assertTrue($this->testUser->hasPermissionTo('edit-articles', 'blog'));
+        $this->assertTrue($this->testUser->hasPermissionTo('edit-articles', 'blog', 'idsign'));
 
         $this->assertQueryCount(6);//+ 4 for getting the User's relations
     }
