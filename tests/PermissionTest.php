@@ -58,6 +58,10 @@ class PermissionTest extends TestCase
 
         $section4 = SectionModel::create(['name' => 'section4']);
 
+        $section4sub1 = SectionModel::create(['name' => 'section4sub1']);
+
+        $section4->children()->save($section4sub1);
+
         $permission1_1 = PermissionModel::create(['name' => 'permission1.1']);
 
         $permission1_2 = PermissionModel::create(['name' => 'permission1.2']);
@@ -70,6 +74,8 @@ class PermissionTest extends TestCase
 
         $permission4_2 = PermissionModel::create(['name' => 'permission4.2']);
 
+        $permission4sub1_1 = PermissionModel::create(['name' => 'permission4sub1_1']);
+
         $crossPermissionSec1_2 = PermissionModel::create(['name' => 'cross-permission-sec1_2']);
 
         $crossPermissionSec2_4 = PermissionModel::create(['name' => 'cross-permission-sec2_4']);
@@ -81,6 +87,7 @@ class PermissionTest extends TestCase
         $container1 = Container::create(['name' => 'container1']);
 
         $role1->givePermissionTo($permission3, $section3, $container1);
+        $role1->givePermissionTo($permission4sub1_1, $section4sub1, $container1);
         $role2->givePermissionTo($permission4_1, $section4, $container1);
         $role2->givePermissionTo($permission4_2, $section4, $container1);
 
@@ -100,19 +107,20 @@ class PermissionTest extends TestCase
 
         $tree = $user->getPermissionsTree('container1');
 
-        $this->assertTrue(isset($tree['section1']['permission1.1']));
-        $this->assertTrue(isset($tree['section1']['permission1.2']));
-        $this->assertTrue(isset($tree['section2']['permission2']));
-        $this->assertTrue(isset($tree['section3']['permission3']));
-        $this->assertTrue(isset($tree['section4']['permission4.1']));
-        $this->assertTrue(isset($tree['section4']['permission4.2']));
-        $this->assertTrue(isset($tree['section1']['cross-permission-sec1_2']));
-        $this->assertTrue(isset($tree['section2']['cross-permission-sec1_2']));
-        $this->assertTrue(isset($tree['section2']['cross-permission-sec2_4']));
-        $this->assertTrue(isset($tree['section4']['cross-permission-sec2_4']));
+        $this->assertTrue(isset($tree['section1']['permissions']['permission1.1']));
+        $this->assertTrue(isset($tree['section1']['permissions']['permission1.2']));
+        $this->assertTrue(isset($tree['section2']['permissions']['permission2']));
+        $this->assertTrue(isset($tree['section3']['permissions']['permission3']));
+        $this->assertTrue(isset($tree['section4']['permissions']['permission4.1']));
+        $this->assertTrue(isset($tree['section4']['children']['section4sub1']['permissions']['permission4sub1_1']));
+        $this->assertTrue(isset($tree['section4']['permissions']['permission4.2']));
+        $this->assertTrue(isset($tree['section1']['permissions']['cross-permission-sec1_2']));
+        $this->assertTrue(isset($tree['section2']['permissions']['cross-permission-sec1_2']));
+        $this->assertTrue(isset($tree['section2']['permissions']['cross-permission-sec2_4']));
+        $this->assertTrue(isset($tree['section4']['permissions']['cross-permission-sec2_4']));
 
-        $this->assertFalse(isset($tree['section3']['cross-permission-sec2_4']));
-        $this->assertFalse(isset($tree['section1']['permission2']));
+        $this->assertFalse(isset($tree['section3']['permissions']['cross-permission-sec2_4']));
+        $this->assertFalse(isset($tree['section1']['permissions']['permission2']));
     }
 
     /** @test */

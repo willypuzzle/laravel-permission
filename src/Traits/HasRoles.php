@@ -2,7 +2,7 @@
 
 namespace Idsign\Permission\Traits;
 
-use Idsign\Permission\Contracts\{Container, Permission, Role, Section};
+use Idsign\Permission\Contracts\{Constants, Container, Permission, Role, Section};
 use Idsign\Permission\Exceptions\RoleDoesNotExist;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
@@ -495,7 +495,6 @@ trait HasRoles
 
         if($checkEnabled){
             $relation = $relation->where('state', Permission::ENABLED);
-
         }
 
         return $relation->get();
@@ -554,10 +553,21 @@ trait HasRoles
      */
     public function getAllPermissions($section, $container, $checkEnabled = true): Collection
     {
-        return $this->getDirectPermissions($section, $container, $checkEnabled)
-            ->merge($this->getPermissionsViaRoles($section, $container, $checkEnabled))
-            ->sort()
-            ->values();
+        $directPermissions = $this->getDirectPermissions($section, $container, $checkEnabled);
+
+        $directPermissionsFiltered = $directPermissions->filter(function ($permission){return $permission->pivot->enabled;});
+
+        return $this->getPermissionsViaRoles($section, $container, $checkEnabled)->filter(function ($rolePermission) use ($directPermissions){
+                if($directPermissions->first(function ($p) use ($rolePermission){
+                    return $p->name == $rolePermission->name;
+                })){
+                    return $directPermissions->pivot->enabled;
+                }
+
+                return true;
+            })->merge($directPermissionsFiltered)
+              ->sort()
+              ->values();
     }
 
     public function getRoleNames($checkEnabled = true): Collection
@@ -600,7 +610,7 @@ trait HasRoles
         return explode('|', trim($pipeString, $quoteCharacter));
     }
 
-    public function getPermissionsTree($container, $checkEnabled = true) : array
+    /*public function getPermissionsTree($container, $checkEnabled = true) : array
     {
         if($checkEnabled && !$this->isEnabled()){
             return [];
@@ -621,6 +631,50 @@ trait HasRoles
         $result = [];
         foreach ($sections as $section){
             $result[$section->name] = $this->parseCollectionForPermissionTree($this->getAllPermissions($section, $container,$checkEnabled));
+        }
+
+        return $result;
+    }*/
+
+    public function getPermissionsTree($container, $type = Constants::TREE_TYPE_GLOBAL, $checkEnabled = true) : array
+    {
+        $container = $this->resolveClass($container, Container::class);
+
+        $sections = app(Section::class)->tree($container->guard_name, $checkEnabled);
+
+        return $this->parseChidrenForTree($sections, $container, $type, $checkEnabled);
+    }
+
+    protected function getPermissionPerTreeType($type, $section, $container, $checkEnabled)
+    {
+        switch ($type){
+            case Constants::TREE_TYPE_ROLE:
+                $perms = $this->getPermissionsViaRoles($section, $container, $checkEnabled);
+                break;
+            case Constants::TREE_TYPE_USER:
+                $perms = $this->getDirectPermissions($section, $container, $checkEnabled);
+                break;
+            default:
+                $perms = $this->getAllPermissions($section, $container,$checkEnabled);
+        }
+
+        return $perms;
+    }
+
+    protected function parseChidrenForTree($sections, $container, $type, $checkEnabled)
+    {
+        $result = [];
+        foreach ($sections as $section){
+            $relation = $section->children();
+            if($checkEnabled){
+                $relation = $relation->where('state', Section::ENABLED);
+            }
+            $children = $this->parseChidrenForTree($relation->get(), $container, $type, $checkEnabled);
+            $permissions = $this->parseCollectionForPermissionTree($this->getPermissionPerTreeType($type, $section, $container, $checkEnabled));
+            $result[$section->name] = [
+                'permissions' => $permissions,
+                'children' => $children,
+            ];
         }
 
         return $result;

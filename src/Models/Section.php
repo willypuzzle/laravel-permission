@@ -210,7 +210,7 @@ class Section extends Model implements SectionContract
         return $this->belongsTo(config('permission.models.section'), 'section_id');
     }
 
-    public function childrens($onlyEnabled = true)
+    public function children($onlyEnabled = true)
     {
         $relation = $this->hasMany(config('permission.models.section'), 'section_id');
 
