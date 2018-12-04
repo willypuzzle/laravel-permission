@@ -100,6 +100,9 @@ abstract class TestCase extends Orchestra
         // Use test User model for users provider
         $app['config']->set('auth.providers.users.model', User::class);
 
+        $app['config']->set('permission.user.model.api.model', User::class);
+        $app['config']->set('permission.user.model.web.model', User::class);
+
         $app['log']->getMonolog()->pushHandler(new TestHandler());
     }
 
@@ -129,9 +132,9 @@ abstract class TestCase extends Orchestra
 
         User::create(['email' => 'test@user.com']);
         Admin::create(['email' => 'admin@user.com']);
-        $app[Role::class]->create(['name' => 'testRole']);
-        $app[Role::class]->create(['name' => 'testRole2']);
-        $app[Role::class]->create(['name' => 'testAdminRole', 'guard_name' => 'admin']);
+        $app[Role::class]->create(['name' => 'testRole', 'state' => Role::ENABLED]);
+        $app[Role::class]->create(['name' => 'testRole2', 'state' => Role::ENABLED]);
+        $app[Role::class]->create(['name' => 'testAdminRole', 'guard_name' => 'admin', 'state' => Role::ENABLED]);
         $app[Permission::class]->create(['name' => 'edit-articles']);
         $app[Permission::class]->create(['name' => 'edit-news']);
         $app[Permission::class]->create(['name' => 'admin-permission', 'guard_name' => 'admin']);

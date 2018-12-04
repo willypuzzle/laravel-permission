@@ -126,7 +126,7 @@ class CacheTest extends TestCase
 
         $this->assertTrue($this->testUser->hasPermissionTo('edit-articles', 'blog', 'idsign'));
 
-        $this->assertQueryCount(self::QUERIES_PER_CACHE_PROVISION + 4); // + 4 for getting the User's relations
+        $this->assertQueryCount(self::QUERIES_PER_CACHE_PROVISION + 5); // + 4 for getting the User's relations
         $this->resetQueryCount();
 
         $this->assertTrue($this->testUser->hasPermissionTo('edit-news', 'blog', 'idsign'));
@@ -138,8 +138,10 @@ class CacheTest extends TestCase
         $this->assertQueryCount(6);//+ 4 for getting the User's relations
     }
 
-    protected function assertQueryCount(int $expected)
+    protected function assertQueryCount(int $expected, $debug = false)
     {
+        if($debug)
+            var_dump(DB::getQueryLog());
         $this->assertCount($expected, DB::getQueryLog());
     }
 

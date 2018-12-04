@@ -25,14 +25,17 @@ class MultipleGuardsTest extends TestCase
         $secondPermission = Permission::create([
             'name' => 'do_that',
             'guard_name' => 'api',
+            'state' => \Idsign\Permission\Contracts\Permission::ENABLED,
         ]);
         $secondSection = Section::create([
             'name' => 'section2',
-            'guard_name' => 'api'
+            'guard_name' => 'api',
+            'state' => \Idsign\Permission\Contracts\Section::ENABLED,
         ]);
         $secondContainer = Container::create([
             'name' => 'container2',
-            'guard_name' => 'api'
+            'guard_name' => 'api',
+            'state' => \Idsign\Permission\Contracts\Container::ENABLED,
         ]);
 
         $this->testUser->givePermissionTo($secondPermission, $secondSection, $secondContainer);

@@ -8,7 +8,10 @@ return [
         'model' => [
             'web' => [
                 'model' => \App\Models\User::class
-            ] //models are differentiated by guard
+            ],
+            'api' => [
+                'model' => \App\Models\User::class
+            ],//models are differentiated by guard
         ],
         'state' => [
             /*

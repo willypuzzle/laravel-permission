@@ -157,7 +157,11 @@ class Role extends Model implements RoleContract
             return false;
         }
 
-        if($checkEnabled && $this->state !== RoleContract::ENABLED){
+        if($this->guard_name != $permission->guard_name){
+            throw new GuardDoesNotMatch();
+        }
+
+        if($checkEnabled && $this->state != RoleContract::ENABLED){
             return false;
         }
 

@@ -48,7 +48,7 @@ class RoleTest extends TestCase
     {
         $this->testUserRole->givePermissionTo('edit-articles', 'blog', 'idsign');
 
-        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-articles', 'blog', 'idsign'));
+        $this->assertTrue($this->testUserRole->hasPermissionTo('edit-articles', 'blog', 'idsign', true));
     }
 
     /** @test */
