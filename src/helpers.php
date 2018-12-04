@@ -1,4 +1,5 @@
 <?php
+namespace Idsign\Permission\Helpers;
 
 /**
  * @param string $guard

@@ -11,6 +11,7 @@ use Idsign\Permission\Exceptions\PermissionDoesNotExist;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Idsign\Permission\Exceptions\PermissionAlreadyExists;
 use Idsign\Permission\Contracts\Permission as PermissionContract;
+use function Idsign\Permission\Helpers\getModelForGuard;
 
 class Permission extends Model implements PermissionContract
 {
@@ -63,26 +64,54 @@ class Permission extends Model implements PermissionContract
     /**
      * A permission can be applied to roles.
      */
-    public function roles(): BelongsToMany
+    public function roles($sectionId = null, $containerId = null, $roleId = null): BelongsToMany
     {
-        return $this->belongsToMany(
+        $relation = $this->belongsToMany(
             config('permission.models.role'),
-            config('permission.table_names.role_has_permissions')
+            config('permission.table_names.role_has_permissions'),
+            'permission_id',
+            'role_id',
+            'id',
+            'id'
         );
+
+        if($sectionId){
+            $relation = $relation->wherePivot('section_id', '=', $sectionId);
+        }
+
+        if($containerId){
+            $relation = $relation->wherePivot('container_id', '=', $containerId);
+        }
+
+        if($roleId){
+            $relation = $relation->wherePivot('role_id', '=', $roleId);
+        }
+
+        return $relation;
     }
 
     /**
      * A permission belongs to some users of the model associated with its guard.
      */
-    public function users(): MorphToMany
+    public function users($sectionId = null, $containerId = null): MorphToMany
     {
-        return $this->morphedByMany(
+        $relation =  $this->morphedByMany(
             getModelForGuard($this->attributes['guard_name']),
             'model',
             config('permission.table_names.model_has_permissions'),
             'permission_id',
             'model_id'
         );
+
+        if($sectionId){
+            $relation = $relation->wherePivot('section_id', '=', $sectionId);
+        }
+
+        if($containerId){
+            $relation = $relation->wherePivot('container_id', '=', $containerId);
+        }
+
+        return $relation;
     }
 
     /**

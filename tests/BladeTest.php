@@ -26,9 +26,10 @@ class BladeTest extends TestCase
         $permission = 'edit-articles';
         $role = 'writer';
         $section = 'blog';
+        $container = 'idsign';
         $roles = [$role];
 
-        $this->assertEquals('does not have permission', $this->renderView('can', ['permission' => $permission, 'arguments' => [$section]]));
+        $this->assertEquals('does not have permission', $this->renderView('can', ['permission' => $permission, 'arguments' => [$section, $container]]));
         $this->assertEquals('does not have role', $this->renderView('role', [$role]));
         $this->assertEquals('does not have role', $this->renderView('hasRole', [$role]));
         $this->assertEquals('does not have all of the given roles', $this->renderView('hasAllRoles', $roles));
@@ -43,11 +44,12 @@ class BladeTest extends TestCase
         $permission = 'edit-articles';
         $role = 'writer';
         $section = 'blog';
+        $container = 'idsign';
         $roles = 'writer';
 
         auth()->setUser($this->testUser);
 
-        $this->assertEquals('does not have permission', $this->renderView('can', ['permission' => $permission, 'arguments' => [$section]]));
+        $this->assertEquals('does not have permission', $this->renderView('can', ['permission' => $permission, 'arguments' => [$section, $container]]));
         $this->assertEquals('does not have role', $this->renderView('role', compact('role')));
         $this->assertEquals('does not have role', $this->renderView('hasRole', compact('role')));
         $this->assertEquals('does not have all of the given roles', $this->renderView('hasAllRoles', compact('roles')));
@@ -60,9 +62,10 @@ class BladeTest extends TestCase
         $permission = 'edit-articles';
         $role = 'writer';
         $section = 'blog';
+        $container = 'idsign';
         $roles = 'writer';
 
-        $arguments = [$section];
+        $arguments = [$section, $container];
 
         auth('admin')->setUser($this->testAdmin);
 
@@ -79,11 +82,11 @@ class BladeTest extends TestCase
     {
         $user = $this->getWriter();
 
-        $user->givePermissionTo('edit-articles', 'blog');
+        $user->givePermissionTo('edit-articles', 'blog', 'idsign');
 
         auth()->setUser($user);
 
-        $this->assertEquals('has permission', $this->renderView('can', ['permission' => 'edit-articles', 'arguments' => ['blog']]));
+        $this->assertEquals('has permission', $this->renderView('can', ['permission' => 'edit-articles', 'arguments' => ['blog', 'idsign']]));
     }
 
     /** @test */

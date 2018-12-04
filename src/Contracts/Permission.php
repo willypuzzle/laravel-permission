@@ -24,7 +24,7 @@ interface Permission
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function roles(): BelongsToMany;
+    public function roles($sectionId = null, $containerId = null, $roleId = null): BelongsToMany;
 
     /**
      * Find a permission by its name.

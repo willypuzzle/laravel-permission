@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Test;
 
+use Idsign\Permission\Contracts\Container;
 use Monolog\Handler\TestHandler;
 use Idsign\Permission\Contracts\Role;
 use Illuminate\Database\Schema\Blueprint;
@@ -37,6 +38,12 @@ abstract class TestCase extends Orchestra
     /** @var \Idsign\Permission\Models\Section */
     protected $testAdminSection;
 
+    /** @var \Idsign\Permission\Models\Container */
+    protected $testUserContainer;
+
+    /** @var \Idsign\Permission\Models\Container */
+    protected $testAdminContainer;
+
     public function setUp()
     {
         parent::setUp();
@@ -47,11 +54,13 @@ abstract class TestCase extends Orchestra
         $this->testUserRole = app(Role::class)->find(1);
         $this->testUserPermission = app(Permission::class)->find(1);
         $this->testUserSection = app(Section::class)->find(1);
+        $this->testUserContainer = app(Container::class)->find(1);
 
         $this->testAdmin = Admin::first();
         $this->testAdminRole = app(Role::class)->find(3);
         $this->testAdminPermission = app(Permission::class)->find(3);
         $this->testAdminSection = app(Section::class)->find(2);
+        $this->testAdminContainer = app(Container::class)->find(2);
 
         $this->clearLogTestHandler();
     }
@@ -91,6 +100,9 @@ abstract class TestCase extends Orchestra
         // Use test User model for users provider
         $app['config']->set('auth.providers.users.model', User::class);
 
+        $app['config']->set('permission.user.model.api.model', User::class);
+        $app['config']->set('permission.user.model.web.model', User::class);
+
         $app['log']->getMonolog()->pushHandler(new TestHandler());
     }
 
@@ -120,15 +132,18 @@ abstract class TestCase extends Orchestra
 
         User::create(['email' => 'test@user.com']);
         Admin::create(['email' => 'admin@user.com']);
-        $app[Role::class]->create(['name' => 'testRole']);
-        $app[Role::class]->create(['name' => 'testRole2']);
-        $app[Role::class]->create(['name' => 'testAdminRole', 'guard_name' => 'admin']);
+        $app[Role::class]->create(['name' => 'testRole', 'state' => Role::ENABLED]);
+        $app[Role::class]->create(['name' => 'testRole2', 'state' => Role::ENABLED]);
+        $app[Role::class]->create(['name' => 'testAdminRole', 'guard_name' => 'admin', 'state' => Role::ENABLED]);
         $app[Permission::class]->create(['name' => 'edit-articles']);
         $app[Permission::class]->create(['name' => 'edit-news']);
         $app[Permission::class]->create(['name' => 'admin-permission', 'guard_name' => 'admin']);
 
         $app[Section::class]->create(['name' => 'blog']);
         $app[Section::class]->create(['name' => 'blog', 'guard_name' => 'admin']);
+
+        $app[Container::class]->create(['name' => 'idsign']);
+        $app[Container::class]->create(['name' => 'idsign', 'guard_name' => 'admin']);
     }
 
     /**

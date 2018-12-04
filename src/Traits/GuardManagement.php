@@ -7,6 +7,9 @@ trait GuardManagement{
 
     protected function usedGuard() : string
     {
+        if(isset($this->guardUsed) && is_string($this->guardUsed)){
+            return $this->guardUsed;
+        }
         return config('auth.defaults.guard');
     }
 }

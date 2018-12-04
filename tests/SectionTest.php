@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Test;
 
+use Idsign\Permission\Models\Container;
 use Idsign\Permission\Models\Permission;
 use Idsign\Permission\Models\Section;
 use Illuminate\Support\Facades\DB;
@@ -20,9 +21,12 @@ class SectionTest extends TestCase
         $section = new Section(['name' => 'bio']);
         $section->save();
 
+        $container = new Container(['name' => 'pippo']);
+        $container->save();
+
         $this->testUser->assignRole($role);
-        $this->testUser->givePermissionTo($permission, $section);
-        $role->givePermissionTo($permission, $section);
+        $this->testUser->givePermissionTo($permission, $section, $container);
+        $role->givePermissionTo($permission, $section, $container);
 
         $sectionId = $section->id;
 

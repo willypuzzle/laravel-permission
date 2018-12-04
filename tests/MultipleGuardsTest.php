@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Test;
 
+use Idsign\Permission\Models\Container;
 use Idsign\Permission\Models\Permission;
 use Idsign\Permission\Models\Section;
 
@@ -16,18 +17,31 @@ class MultipleGuardsTest extends TestCase
         ]),Section::create([
             'name' => 'section1',
             'guard_name' => 'web'
+        ]),Container::create([
+            'name' => 'container1',
+            'guard_name' => 'web'
         ]));
 
-        $this->testUser->givePermissionTo(Permission::create([
+        $secondPermission = Permission::create([
             'name' => 'do_that',
             'guard_name' => 'api',
-        ]),Section::create([
+            'state' => \Idsign\Permission\Contracts\Permission::ENABLED,
+        ]);
+        $secondSection = Section::create([
             'name' => 'section2',
-            'guard_name' => 'api'
-        ]));
+            'guard_name' => 'api',
+            'state' => \Idsign\Permission\Contracts\Section::ENABLED,
+        ]);
+        $secondContainer = Container::create([
+            'name' => 'container2',
+            'guard_name' => 'api',
+            'state' => \Idsign\Permission\Contracts\Container::ENABLED,
+        ]);
 
-        $this->assertTrue($this->testUser->hasPermissionTo('do_this', 'section1','web'));
-        $this->assertTrue($this->testUser->hasPermissionTo('do_that', 'section2','api'));
+        $this->testUser->givePermissionTo($secondPermission, $secondSection, $secondContainer);
+
+        $this->assertTrue($this->testUser->hasPermissionTo('do_this', 'section1','container1'));
+        $this->assertTrue($this->testUser->hasPermissionTo($secondPermission, $secondSection, $secondContainer));
     }
 
     protected function getEnvironmentSetUp($app)

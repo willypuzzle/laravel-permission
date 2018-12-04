@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission;
 
+use Idsign\Permission\Contracts\Container;
 use Idsign\Permission\Contracts\Section;
 use Idsign\Permission\Exceptions\MalformedArguments;
 use Idsign\Permission\Exceptions\SectionDoesNotExist;
@@ -26,6 +27,9 @@ class PermissionRegistrar
     /** @var string */
     protected $cacheKeySections = 'idsign.permission.cache.sections';
 
+
+    protected $cacheKeyContainers = 'idsign.permission.cache.containers';
+
     public function __construct(Gate $gate, Repository $cache)
     {
         $this->gate = $gate;
@@ -37,10 +41,10 @@ class PermissionRegistrar
         $this->gate->before(function (Authenticatable $user, string $ability, array $arguments) {
             try {
                 if (method_exists($user, 'hasPermissionTo')) {
-                    if(count($arguments) != 1){
+                    if(count($arguments) != 2){
                         throw MalformedArguments::create($arguments);
                     }
-                    return $user->hasPermissionTo($ability, $arguments[0]) ?: null;
+                    return $user->hasPermissionTo($ability, $arguments[0], $arguments[1]) ?: null;
                 }
             } catch (PermissionDoesNotExist $e) {
                 return null;
@@ -56,6 +60,7 @@ class PermissionRegistrar
     {
         $this->cache->forget($this->cacheKeyPermissions);
         $this->cache->forget($this->cacheKeySections);
+        $this->cache->forget($this->cacheKeyContainers);
     }
 
     public function getPermissions(): Collection
@@ -69,6 +74,13 @@ class PermissionRegistrar
     {
         return $this->cache->remember($this->cacheKeySections, config('permission.cache_expiration_time'), function () {
             return app(Section::class)->with([])->get();
+        });
+    }
+
+    public function getContainers(): Collection
+    {
+        return $this->cache->remember($this->cacheKeyContainers, config('permission.cache_expiration_time'), function () {
+            return app(Container::class)->with([])->get();
         });
     }
 }
