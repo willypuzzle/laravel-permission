@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use function Idsign\Permission\Helpers\getModelForGuard;
 use Willypuzzle\Helpers\Facades\General\Database;
+use Idsign\Permission\Contracts\Container as ContainerContract;
 
 class Section extends Model implements SectionContract
 {
@@ -221,14 +222,68 @@ class Section extends Model implements SectionContract
         return $relation;
     }
 
-    public static function tree($guardName, $onlyEnabled = true) : Collection
+    /**
+     * @param string|ContainerContract $container
+     * @param bool $onlyEnabled
+     * @param null|integer $rootId
+     * @return array
+     */
+    protected static function tree($container, $onlyEnabled = true, $rootId = null, $global = false) : array
     {
-        $query = static::where('guard_name', $guardName)->where('section_id', null);
+        if($global){
+            $query = static::where('guard_name', $container);
+        }else{
+            $query = $container->sections();
+        }
+
+        $query = $query->where(config('permission.table_names.sections').'.section_id', $rootId);
 
         if($onlyEnabled){
             $query = $query->where('state', SectionContract::ENABLED);
         }
 
-        return $query->get();
+        $data = $query->get()->all();
+        $return = [];
+        foreach ($data as $model){
+            $children = self::tree($container, $onlyEnabled, $model->id, $global);
+            $return[] = [
+                'model' => $model,
+                'children' => $children
+            ];
+        }
+
+        return $return;
+    }
+
+    public function containers() : BelongsToMany
+    {
+        $relationship = $this->belongsToMany(
+            config('permission.models.container'),
+            config('permission.table_names.container_section'),
+            'section_id',
+            'container_id'
+        )->withPivot(['superadmin']);
+
+        return $relationship;
+    }
+
+    /**
+     * @param string $guard
+     * @param bool $onlyEnabled
+     * @return array
+     */
+    public static function globalTree(string $guard, $onlyEnabled = true)
+    {
+        return self::tree($guard, $onlyEnabled, null, true);
+    }
+
+    /**
+     * @param ContainerContract $container
+     * @param bool $onlyEnabled
+     * @return array
+     */
+    public static function containerTree(ContainerContract $container, $onlyEnabled = true)
+    {
+        return self::tree($container, $onlyEnabled, null, false);
     }
 }

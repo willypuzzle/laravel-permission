@@ -6,6 +6,7 @@ use Idsign\Permission\Exceptions\ContainerAlreadyExists;
 use Idsign\Permission\Exceptions\ContainerDoesNotExist;
 use Idsign\Permission\PermissionRegistrar;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use Willypuzzle\Helpers\Facades\General\Database;
@@ -96,7 +97,12 @@ class Container extends Model implements ContainerInterface
 
     public function permissions_from_roles($roleId = null, $sectionId = null)
     {
-        $relationship = $this->belongsToMany(config('permission.models.permission'), config('permission.table_names.role_has_permissions'), 'container_id');
+        $relationship = $this->belongsToMany(
+            config('permission.models.permission'),
+            config('permission.table_names.role_has_permissions'),
+            'container_id',
+            'permission_id'
+        );
 
         if($roleId){
             $relationship = $relationship->wherePivot('role_id', $roleId);
@@ -105,6 +111,18 @@ class Container extends Model implements ContainerInterface
         if($sectionId){
             $relationship = $relationship->wherePivot('section_id', $sectionId);
         }
+
+        return $relationship;
+    }
+
+    public function sections() : BelongsToMany
+    {
+        $relationship = $this->belongsToMany(
+            config('permission.models.section'),
+            config('permission.table_names.container_section'),
+            'container_id',
+            'section_id'
+        )->withPivot(['superadmin']);
 
         return $relationship;
     }

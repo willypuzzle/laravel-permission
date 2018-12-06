@@ -9,6 +9,7 @@ use Idsign\Permission\Models\Section as SectionModel;
 use Idsign\Permission\Models\Permission as PermissionModel;
 use Idsign\Permission\Models\Role as RoleModel;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PermissionTest extends TestCase
 {
@@ -85,6 +86,14 @@ class PermissionTest extends TestCase
         $role2 = RoleModel::create(['name' => 'role2']);
 
         $container1 = Container::create(['name' => 'container1']);
+
+        $container1->sections()->saveMany([
+            $section3,
+            $section4sub1,
+            $section1,
+            $section2,
+            $section4
+        ]);
 
         $role1->givePermissionTo($permission3, $section3, $container1);
         $role1->givePermissionTo($permission4sub1_1, $section4sub1, $container1);

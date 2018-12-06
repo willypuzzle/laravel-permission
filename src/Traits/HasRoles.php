@@ -640,7 +640,7 @@ trait HasRoles
     {
         $container = $this->resolveClass($container, Container::class);
 
-        $sections = app(Section::class)->tree($container->guard_name, $checkEnabled);
+        $sections = app(Section::class)->containerTree($container, $checkEnabled);
 
         return $this->parseChidrenForTree($sections, $container, $type, $checkEnabled);
     }
@@ -665,13 +665,9 @@ trait HasRoles
     {
         $result = [];
         foreach ($sections as $section){
-            $relation = $section->children();
-            if($checkEnabled){
-                $relation = $relation->where('state', Section::ENABLED);
-            }
-            $children = $this->parseChidrenForTree($relation->get(), $container, $type, $checkEnabled);
-            $permissions = $this->parseCollectionForPermissionTree($this->getPermissionPerTreeType($type, $section, $container, $checkEnabled));
-            $result[$section->name] = [
+            $children = $this->parseChidrenForTree($section['children'], $container, $type, $checkEnabled);
+            $permissions = $this->parseCollectionForPermissionTree($this->getPermissionPerTreeType($type, $section['model'], $container, $checkEnabled));
+            $result[$section['model']->name] = [
                 'permissions' => $permissions,
                 'children' => $children,
             ];

@@ -56,6 +56,7 @@ class CreatePermissionTables extends Migration
             $table->integer('section_id')->unsigned()->nullable();
             $table->string('guard_name');
             $table->integer('state')->default($defaultState)->comment('0 = disabled, 1 = enabled');
+            $table->boolean('superadmin')->default(false);
             $table->timestamps();
 
             $table->foreign('section_id')
@@ -65,6 +66,27 @@ class CreatePermissionTables extends Migration
                             ->onUpdate('cascade');
 
             $table->unique(['name', 'guard_name']);
+        });
+
+        Schema::create($tableNames['container_section'], function (Blueprint $table) use ($tableNames){
+            $table->integer('id')->autoIncrement()->unique()->unsigned();
+            $table->integer('container_id')->unsigned();
+            $table->integer('section_id')->unsigned();
+            $table->boolean('superadmin')->default(false);
+
+            $table->foreign('section_id')
+                ->references('id')
+                ->on($tableNames['sections'])
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->foreign('container_id')
+                ->references('id')
+                ->on($tableNames['containers'])
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->unique(['section_id', 'container_id'], $tableNames['container_section'].'_unique_key');
         });
 
         Schema::create($tableNames['model_has_permissions'], function (Blueprint $table) use ($tableNames) {

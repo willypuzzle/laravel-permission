@@ -133,7 +133,15 @@ return [
          * basic default value but you may easily change it to any table you like.
          */
 
-        'containers' => 'containers'
+        'containers' => 'containers',
+
+        /*
+         * When sections' tree is generated it is done by a container key.
+         * This is the pivot table. We have chosen a basic default value but
+         * you may easily change it to any table you like.
+         */
+
+        'container_section' => 'container_section',
     ],
 
     /*
