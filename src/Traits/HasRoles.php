@@ -610,32 +610,6 @@ trait HasRoles
         return explode('|', trim($pipeString, $quoteCharacter));
     }
 
-    /*public function getPermissionsTree($container, $checkEnabled = true) : array
-    {
-        if($checkEnabled && !$this->isEnabled()){
-            return [];
-        }
-
-        if($checkEnabled){
-            $sections = app(Section::class)->where([
-                'guard_name' => $this->getDefaultGuardName(),
-                'state' => Section::ENABLED
-            ])->get();
-        }else{
-            $sections = app(Section::class)->where([
-                'guard_name' => $this->getDefaultGuardName()
-            ])->get();
-        }
-
-
-        $result = [];
-        foreach ($sections as $section){
-            $result[$section->name] = $this->parseCollectionForPermissionTree($this->getAllPermissions($section, $container,$checkEnabled));
-        }
-
-        return $result;
-    }*/
-
     public function getPermissionsTree($container, $type = Constants::TREE_TYPE_GLOBAL, $checkEnabled = true) : array
     {
         $container = $this->resolveClass($container, Container::class);
