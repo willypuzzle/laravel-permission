@@ -27,7 +27,8 @@ class Role extends Model implements RoleContract
     public $guarded = ['id'];
 
     protected $casts = [
-        'label' => 'array'
+        'label' => 'array',
+        'meta' => 'array',
     ];
 
     public function __construct(array $attributes = [])

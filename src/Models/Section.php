@@ -22,7 +22,8 @@ class Section extends Model implements SectionContract
     public $guarded = ['id'];
 
     protected $casts = [
-        'label' => 'array'
+        'label' => 'array',
+        'meta' => 'array',
     ];
 
     public function __construct(array $attributes = [])

@@ -18,6 +18,7 @@ class Container extends Model implements ContainerInterface
 
     protected $casts = [
         'label' => 'array',
+        'meta' => 'array',
     ];
 
     public function __construct(array $attributes = [])
