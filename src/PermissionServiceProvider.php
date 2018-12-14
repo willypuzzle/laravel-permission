@@ -44,6 +44,10 @@ class PermissionServiceProvider extends ServiceProvider
             'permission'
         );
 
+        $this->app->singleton('idsign.permission.support', function ($app) {
+            return new Support\Support($app);
+        });
+
         $this->registerBladeExtensions();
     }
 
