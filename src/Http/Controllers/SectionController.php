@@ -38,6 +38,11 @@ class SectionController extends PermissionRoleSectionController
         return response()->json($this->getModel()->where($where)->get()->toArray());
     }
 
+    /**
+     * @param Request $request
+     * @return array
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
     public function getTree(Request $request)
     {
         $this->validate($request, [
@@ -51,7 +56,7 @@ class SectionController extends PermissionRoleSectionController
         switch ($type){
             case 'complete':
                 $this->checkForPermittedRoles();
-                return Section::globalTree(config('auth.defaults.guard'), false);
+                return Section::globalTree($this->usedGuard(), false);
                 break;
         }
     }
