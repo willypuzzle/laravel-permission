@@ -12,7 +12,7 @@ use Illuminate\Database\Seeder;
 use Idsign\Permission\Models\Permission as PermissionModel;
 use Idsign\Permission\Contracts\Permission as PermissionContract;
 
-class Permission extends Seeder
+class PermissionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
