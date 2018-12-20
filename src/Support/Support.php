@@ -27,6 +27,7 @@ class Support
             ->group(function (){
                 Route::prefix('/sections')->group(function (){
                     Route::get('get-tree', 'SectionController@getTree');
+                    Route::delete('delete', 'SectionController@delete');
                 });
             });
     }
