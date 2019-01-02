@@ -61,4 +61,24 @@ class SectionController extends PermissionRoleSectionController
         }
     }
 
+    public function move(Request $request)
+    {
+        $this->checkForPermittedRoles();
+
+        $this->validate($request, [
+            'section' => [
+                'exists:'.config('permission.table_names.sections').',id',
+            ],
+            'parent' => [
+                'exists:'.config('permission.table_names.sections').',id',
+            ],
+            'position' => [
+                'integer'
+            ],
+            'siblings' => [
+                'array'
+            ]
+        ]);
+    }
+
 }

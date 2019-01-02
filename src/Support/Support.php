@@ -26,8 +26,9 @@ class Support
             ->prefix('/acl')
             ->group(function (){
                 Route::prefix('/sections')->group(function (){
-                    Route::get('get-tree', 'SectionController@getTree');
-                    Route::delete('delete/{modelId}', 'SectionController@delete');
+                    Route::get('/get-tree', 'SectionController@getTree');
+                    Route::delete('/delete/{modelId}', 'SectionController@delete');
+                    Route::post('/move', 'SectionController@move');
                 });
             });
     }
