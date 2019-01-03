@@ -5,6 +5,8 @@ namespace Idsign\Permission\Http\Controllers;
 use Idsign\Permission\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Idsign\Permission\Contracts\Section as SectionContract;
+use Willypuzzle\Helpers\Contracts\HttpCodes;
 
 class SectionController extends PermissionRoleSectionController
 {
@@ -56,7 +58,7 @@ class SectionController extends PermissionRoleSectionController
         switch ($type){
             case 'complete':
                 $this->checkForPermittedRoles();
-                return Section::globalTree($this->usedGuard(), false);
+                return app(SectionContract::class)->globalTree($this->usedGuard(), false);
                 break;
         }
     }
@@ -65,12 +67,14 @@ class SectionController extends PermissionRoleSectionController
     {
         $this->checkForPermittedRoles();
 
+        $parent = $request->input('parent');
+
         $this->validate($request, [
             'section' => [
                 'exists:'.config('permission.table_names.sections').',id',
             ],
             'parent' => [
-                'exists:'.config('permission.table_names.sections').',id',
+                $parent ? 'exists:'.config('permission.table_names.sections').',id' : Rule::in([null]),
             ],
             'position' => [
                 'integer'
@@ -79,6 +83,20 @@ class SectionController extends PermissionRoleSectionController
                 'array'
             ]
         ]);
+
+        $siblingsIds = $request->input('siblings');
+
+        $siblings = app(SectionContract::class)->whereIn('id', $siblingsIds)->get();
+
+        if($siblings->count() != count($siblingsIds)){
+            return response()->json([
+                'note' => 'some sibling doesn\'t exist'
+            ], HttpCodes::UNPROCESSABLE_ENTITY);
+        }
+
+        if($siblings->filter(function ($sibling){
+            // TODO check if sibling has the same parent with section
+        }));
     }
 
 }
