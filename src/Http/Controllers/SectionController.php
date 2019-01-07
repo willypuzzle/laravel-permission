@@ -67,15 +67,13 @@ class SectionController extends PermissionRoleSectionController
     {
         $this->checkForPermittedRoles();
 
-        $parent = $request->input('parent');
-
         $this->validate($request, [
-            'section' => [
+            /*'section' => [
                 'exists:'.config('permission.table_names.sections').',id',
-            ],
-            'parent' => [
+            ],*/
+            /*'parent' => [
                 $parent ? 'exists:'.config('permission.table_names.sections').',id' : Rule::in([null]),
-            ],
+            ],*/
             'position' => [
                 'integer'
             ],
@@ -84,9 +82,33 @@ class SectionController extends PermissionRoleSectionController
             ]
         ]);
 
+        $section = app(SectionContract::class)->find($request->input('section'));
+
         $siblingsIds = $request->input('siblings');
 
         $siblings = app(SectionContract::class)->whereIn('id', $siblingsIds)->get();
+
+        $position = $request->input('position');
+
+        $parentParameter = $request->input('parent');
+
+        if($parentParameter){
+            $parent = app(SectionContract::class)->find($parentParameter);
+        }else{
+            $parent = null;
+        }
+
+        if(!$section){
+            return response()->json([
+                'note' => 'section doesn\'t exist'
+            ], HttpCodes::UNPROCESSABLE_ENTITY);
+        }
+
+        if($parentParameter && !$parent){
+            return response()->json([
+                'note' => 'parent doesn\'t exist'
+            ], HttpCodes::UNPROCESSABLE_ENTITY);
+        }
 
         if($siblings->count() != count($siblingsIds)){
             return response()->json([
@@ -94,9 +116,15 @@ class SectionController extends PermissionRoleSectionController
             ], HttpCodes::UNPROCESSABLE_ENTITY);
         }
 
-        if($siblings->filter(function ($sibling){
-            // TODO check if sibling has the same parent with section
-        }));
+        if($siblings->filter(function ($sibling) use ($parent){
+            return $sibling->section_id == ($parent ? $parent->id : null);
+        })->count() != $siblings->count()){
+            return response()->json([
+                'note' => 'some sibling doesn\'t share same parent'
+            ], HttpCodes::UNPROCESSABLE_ENTITY);
+        }
+
+
     }
 
 }
