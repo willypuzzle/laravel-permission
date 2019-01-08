@@ -4,6 +4,7 @@ namespace Idsign\Permission\Http\Controllers;
 
 use Idsign\Permission\Models\Section;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Idsign\Permission\Contracts\Section as SectionContract;
 use Willypuzzle\Helpers\Contracts\HttpCodes;
@@ -124,7 +125,18 @@ class SectionController extends PermissionRoleSectionController
             ], HttpCodes::UNPROCESSABLE_ENTITY);
         }
 
+        DB::transaction(function () use ($parent, $position,$section, $siblings){
+            $section->section_id = $parent ? $parent->id : null;
+            $section->order = $position;
+            $section->save();
 
+            $index = $position + 1;
+            foreach ($siblings as $sibling){
+                $sibling->order = $index;
+                $sibling->save();
+                $index++;
+            }
+        });
     }
 
 }

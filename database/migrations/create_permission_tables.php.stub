@@ -60,6 +60,7 @@ class CreatePermissionTables extends Migration
             $table->string('guard_name');
             $table->integer('state')->default($defaultState)->comment('0 = disabled, 1 = enabled');
             $table->boolean('superadmin')->default(false);
+            $table->integer('order');
             $table->json('meta')->nullable();
             $table->timestamps();
 
