@@ -238,6 +238,7 @@ class Section extends Model implements SectionContract
         }
 
         $query = $query->where(config('permission.table_names.sections').'.section_id', $rootId);
+        $query = $query->orderBy(config('permission.table_names.sections').'order', 'asc');
 
         if($onlyEnabled){
             $query = $query->where('state', SectionContract::ENABLED);
