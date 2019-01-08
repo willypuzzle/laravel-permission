@@ -29,6 +29,7 @@ class Support
                     Route::get('/get-tree', 'SectionController@getTree');
                     Route::delete('/delete/{modelId}', 'SectionController@delete');
                     Route::post('/move', 'SectionController@move');
+                    Route::post('/add', 'SectionController@add');
                 });
             });
     }

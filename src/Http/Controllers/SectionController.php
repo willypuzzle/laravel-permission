@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Http\Controllers;
 
+use Idsign\Permission\Exceptions\SectionDoesNotExist;
 use Idsign\Permission\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -69,12 +70,6 @@ class SectionController extends PermissionRoleSectionController
         $this->checkForPermittedRoles();
 
         $this->validate($request, [
-            /*'section' => [
-                'exists:'.config('permission.table_names.sections').',id',
-            ],*/
-            /*'parent' => [
-                $parent ? 'exists:'.config('permission.table_names.sections').',id' : Rule::in([null]),
-            ],*/
             'position' => [
                 'integer'
             ],
@@ -168,4 +163,77 @@ class SectionController extends PermissionRoleSectionController
         });
     }
 
+    public function add(Request $request)
+    {
+        $this->validate($request, [
+            'state' => [
+                Rule::in(SectionContract::ALL_STATES)
+            ],
+            'code' => [
+                'required'
+            ],
+            'name' => [
+                'required'
+            ],
+            'locale' => [
+                'required',
+                'min:2',
+                'max:5'
+            ]
+        ]);
+
+        $parentId = $request->input('parent');
+        if($parentId){
+            if( !($parent = app(SectionContract::class)->find($parentId)) ){
+                return response()->json([
+                    'note' => 'parent not found'
+                ], HttpCodes::UNPROCESSABLE_ENTITY);
+            }
+        }else{
+            $parent = null;
+        }
+
+        $name = $request->input('name');
+        $code = str_slug($request->input('code'));
+        $state = $request->input('state');
+        $locale = $request->input('locale');
+
+        try{
+            $section = app(SectionContract::class)->findByName($code, $this->usedGuard());
+        }catch (SectionDoesNotExist $ex){
+            $section = null;
+        }
+
+        if($section){
+            return response()->json([
+                'note' => 'section already exists',
+                'code_exists' => true
+            ], HttpCodes::UNPROCESSABLE_ENTITY);
+        }
+
+        $siblings = app(SectionContract::class)->where('section_id', $parent ? $parent->id : null)->get();
+
+        $section = $this->getModel();
+        $section->label = [
+            $locale => $name
+        ];
+        $section->name = $code;
+        $section->state = $state;
+        $section->section_id = $parent ? $parent->id : null;
+        $section->order = 0;
+
+        DB::transaction(function () use (&$section, $siblings){
+            $section->save();
+
+            $siblings->each(function ($sibling){
+                $sibling->order = $sibling->order + 1;
+                $sibling->save();
+            });
+        });
+
+        return [
+            'section' => $section->toArray(),
+            'parent' => $parent ? $parent->toArray() : null
+        ];
+    }
 }
