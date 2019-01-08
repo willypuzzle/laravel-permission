@@ -80,6 +80,9 @@ class SectionController extends PermissionRoleSectionController
             ],
             'siblings' => [
                 'array'
+            ],
+            'pre-siblings' => [
+                'array'
             ]
         ]);
 
@@ -88,6 +91,10 @@ class SectionController extends PermissionRoleSectionController
         $siblingsIds = $request->input('siblings');
 
         $siblings = app(SectionContract::class)->whereIn('id', $siblingsIds)->get();
+
+        $preSiblingsIds = $request->input('pre-siblings');
+
+        $preSiblings = app(SectionContract::class)->whereIn('id', $preSiblingsIds)->get();
 
         $position = $request->input('position');
 
@@ -125,10 +132,32 @@ class SectionController extends PermissionRoleSectionController
             ], HttpCodes::UNPROCESSABLE_ENTITY);
         }
 
-        DB::transaction(function () use ($parent, $position,$section, $siblings){
+        if($preSiblings->count() != count($preSiblingsIds)){
+            return response()->json([
+                'note' => 'some pre-sibling doesn\'t exist'
+            ], HttpCodes::UNPROCESSABLE_ENTITY);
+        }
+
+        if($preSiblings->filter(function ($sibling) use ($parent){
+                return $sibling->section_id == ($parent ? $parent->id : null);
+            })->count() != $preSiblings->count()){
+            return response()->json([
+                'note' => 'some pre-sibling doesn\'t share same parent'
+            ], HttpCodes::UNPROCESSABLE_ENTITY);
+        }
+
+        DB::transaction(function () use ($parent, $position,$section, $siblings, $preSiblings){
             $section->section_id = $parent ? $parent->id : null;
             $section->order = $position;
             $section->save();
+
+            $index = $position - 1;
+            $preSiblings = $preSiblings->reverse();
+            foreach ($preSiblings as $sibling){
+                $sibling->order = $index;
+                $sibling->save();
+                $index--;
+            }
 
             $index = $position + 1;
             foreach ($siblings as $sibling){

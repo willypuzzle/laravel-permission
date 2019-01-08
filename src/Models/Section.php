@@ -53,7 +53,7 @@ class Section extends Model implements SectionContract
         });
 
         static::saving(function($model) {
-            if(!$model->order){
+            if($model->order === null){
                 $order = static::where('section_id', $model->section_id)->max('order');
                 $model->order = ($order !== null ? $order + 1 : 0);
             }
@@ -245,7 +245,7 @@ class Section extends Model implements SectionContract
         }
 
         $query = $query->where(config('permission.table_names.sections').'.section_id', $rootId);
-        $query = $query->orderBy(config('permission.table_names.sections').'order', 'asc');
+        $query = $query->orderBy(config('permission.table_names.sections').'.order', 'asc');
 
         if($onlyEnabled){
             $query = $query->where('state', SectionContract::ENABLED);
