@@ -51,6 +51,13 @@ class Section extends Model implements SectionContract
             $model->permissions_from_roles()->detach();
             $model->permissions_from_users()->detach();
         });
+
+        static::saving(function($model) {
+            if(!$model->order){
+                $order = static::where('section_id', $model->section_id)->max('order');
+                $model->order = ($order !== null ? $order + 1 : 0);
+            }
+        });
     }
 
     public static function create(array $attributes = [])
