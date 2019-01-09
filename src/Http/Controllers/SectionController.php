@@ -236,4 +236,94 @@ class SectionController extends PermissionRoleSectionController
             'parent' => $parent ? $parent->toArray() : null
         ], HttpCodes::CREATED);
     }
+
+    /**
+     * @param Request $request
+     * @throws \Exception
+     */
+    public function change(Request $request)
+    {
+        $this->validate($request, [
+            'field' => [
+                'required',
+                Rule::in(['code', 'name', 'state'])
+            ],
+            'section' => [
+                'required'
+            ],
+            'value' => [
+                'required'
+            ],
+            'locale' => [
+                'required',
+                'min:2',
+                'max:5'
+            ]
+        ]);
+
+        return $this->changeChoose($request->input('field'), $request->input('section'), $request->input('value'), $request->input('locale'));
+    }
+
+    /**
+     * @param $field
+     * @param $sectionId
+     * @param $value
+     * @throws \Exception
+     */
+    private function changeChoose($field, $sectionId, $value, $locale)
+    {
+        $section = app(SectionContract::class)->findOrFail($sectionId);
+
+        if($section->guard_name != $this->usedGuard()){
+            throw new \Exception('guard must coincide');
+        }
+
+        switch ($field){
+            case 'code':
+                return $this->changeCode($section, $value);
+            case 'name':
+                return $this->changeName($section, $value, $locale);
+            case 'state':
+                return $this->changeState($section, $value);
+            default:
+                throw new \Exception("'{$field}' is a unknown field");
+        }
+    }
+
+    private function changeCode(SectionContract $section, $value)
+    {
+        try{
+            $check = app(SectionContract::class)->findByName($value, $this->usedGuard());
+        }catch (SectionDoesNotExist $ex){
+            $check = null;
+        }
+
+        if($check){
+            return response()->json(['code_exists' => true], HttpCodes::UNPROCESSABLE_ENTITY);
+        }
+
+        $section->name = $value;
+        $section->save();
+    }
+
+    private function changeName(SectionContract $section, $value, $locale)
+    {
+        $label = $section->label ?? [];
+        $label[$locale] = $value;
+        $section->label = $label;
+
+        $section->save();
+    }
+
+    private function changeState(SectionContract $section, $value)
+    {
+        if(!in_array($value, SectionContract::ALL_STATES)){
+            return response()->json([
+                'note' => 'incorrect state value'
+            ], HttpCodes::UNPROCESSABLE_ENTITY);
+        }
+
+        $section->state = $value;
+        $section->save();
+    }
 }

@@ -30,6 +30,7 @@ class Support
                     Route::delete('/delete/{modelId}', 'SectionController@delete');
                     Route::post('/move', 'SectionController@move');
                     Route::post('/add', 'SectionController@add');
+                    Route::put('/change', 'SectionController@change');
                 });
             });
     }
