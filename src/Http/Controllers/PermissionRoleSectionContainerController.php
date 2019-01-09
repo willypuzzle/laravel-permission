@@ -20,7 +20,6 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
     const SECTION = 'section';
     const PERMISSION = 'permission';
     const ROLE = 'role';
-    const SECTION_TYPE = 'section_type';
 
     protected $databaseDriver = null;
 
@@ -51,8 +50,6 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
                 return config('permission.table_names.permissions');
             case self::ROLE:
                 return config('permission.table_names.roles');
-            case self::SECTION_TYPE:
-                return config('permission.table_names.section_types');
             default:
                 throw MalformedParameter::create($delta);
         }
@@ -204,10 +201,6 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
     {
         $this->checkForPermittedRoles();
 
-        if($this->delta() == self::SECTION_TYPE && app(SectionInterface::class)->find($modelId)){
-            return response()->json([], HttpCodes::CONFLICT);
-        }
-
         $model = $this->getModel()->where(['id' => $modelId, 'guard_name' => $this->usedGuard()])->firstOrFail();
 
         if($this->delta() == self::ROLE && !$this->isSuperuser()){
@@ -245,10 +238,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
         ]);
 
         foreach (json_decode($validatedData['items'], true) as $item){
-            $model = app(SectionInterface::class)->find($item['id']);
-            if($this->delta() == self::SECTION_TYPE && $model){
-                return response()->json([], HttpCodes::CONFLICT);
-            }
+            $model = $this->getModel()->find($item['id']);
 
             if($this->delta() == self::ROLE && !$this->isSuperuser()){
                 if($model->name == config('permission.roles.superuser')){
