@@ -4,7 +4,7 @@ namespace Idsign\Permission\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class SectionTypeController extends PermissionRoleSectionController
+class SectionTypeController extends PermissionRoleSectionContainerController
 {
     public function __construct()
     {

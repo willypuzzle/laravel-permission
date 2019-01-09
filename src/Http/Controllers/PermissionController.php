@@ -2,7 +2,7 @@
 
 namespace Idsign\Permission\Http\Controllers;
 
-class PermissionController extends PermissionRoleSectionController
+class PermissionController extends PermissionRoleSectionContainerController
 {
     public function __construct()
     {

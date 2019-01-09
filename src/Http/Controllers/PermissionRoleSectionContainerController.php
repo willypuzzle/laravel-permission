@@ -15,7 +15,7 @@ use Idsign\Vuetify\Facades\Datatable;
 use Illuminate\Support\Facades\DB;
 use Willypuzzle\Helpers\Contracts\HttpCodes;
 
-abstract class PermissionRoleSectionController extends RoleCheckerController
+abstract class PermissionRoleSectionContainerController extends RoleCheckerController
 {
     const SECTION = 'section';
     const PERMISSION = 'permission';

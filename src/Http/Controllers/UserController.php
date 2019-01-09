@@ -145,7 +145,7 @@ abstract class UserController extends RoleCheckerController
 
         if(!$this->isSuperuser()){
             if($user->roles()->get()->filter(function ($el){
-                return $el->name === confing('permission.roles.superuser');
+                return $el->name === config('permission.roles.superuser');
             })->count() > 0)
             {
                 return response()->json([], HttpCodes::FORBIDDEN);

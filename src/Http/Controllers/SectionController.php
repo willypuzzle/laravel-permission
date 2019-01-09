@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 use Idsign\Permission\Contracts\Section as SectionContract;
 use Willypuzzle\Helpers\Contracts\HttpCodes;
 
-class SectionController extends PermissionRoleSectionController
+class SectionController extends PermissionRoleSectionContainerController
 {
     public function __construct()
     {

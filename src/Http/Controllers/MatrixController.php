@@ -43,7 +43,7 @@ class MatrixController extends RoleCheckerController
         $array = $roles->all();
 
         usort($array, function ($el1, $el2) use ($locale){
-            return PermissionRoleSectionController::sorter($el1, $el2, $locale);
+            return PermissionRoleSectionContainerController::sorter($el1, $el2, $locale);
         });
 
         $roles = collect($array);
@@ -53,7 +53,7 @@ class MatrixController extends RoleCheckerController
         $array = $permissions->all();
 
         usort($array, function ($el1, $el2) use ($locale){
-            return PermissionRoleSectionController::sorter($el1, $el2, $locale);
+            return PermissionRoleSectionContainerController::sorter($el1, $el2, $locale);
         });
 
         $permissions = collect($array);
@@ -173,7 +173,7 @@ class MatrixController extends RoleCheckerController
         $array = $permissions->all();
 
         usort($array, function ($el1, $el2) use ($locale){
-            return PermissionRoleSectionController::sorter($el1, $el2, $locale);
+            return PermissionRoleSectionContainerController::sorter($el1, $el2, $locale);
         });
 
         $permissions = collect($array);
