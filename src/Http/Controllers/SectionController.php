@@ -231,9 +231,9 @@ class SectionController extends PermissionRoleSectionController
             });
         });
 
-        return [
+        return response()->json([
             'section' => $section->toArray(),
             'parent' => $parent ? $parent->toArray() : null
-        ];
+        ], HttpCodes::CREATED);
     }
 }
