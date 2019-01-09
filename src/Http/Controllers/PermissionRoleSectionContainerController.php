@@ -5,6 +5,7 @@ namespace Idsign\Permission\Http\Controllers;
 use Idsign\Permission\Contracts\Permission as PermissionInterface;
 use Idsign\Permission\Contracts\Section as SectionInterface;
 use Idsign\Permission\Contracts\Role as RoleInterface;
+use Idsign\Permission\Contracts\Container as ContainerInterface;
 use Idsign\Permission\Exceptions\MalformedParameter;
 use Idsign\Permission\Exceptions\UnsupportedDatabaseType;
 use Illuminate\Auth\AuthenticationException;
@@ -20,6 +21,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
     const SECTION = 'section';
     const PERMISSION = 'permission';
     const ROLE = 'role';
+    const CONTAINER = 'container';
 
     protected $databaseDriver = null;
 
@@ -34,6 +36,8 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
                 return PermissionInterface::class;
             case self::ROLE:
                 return RoleInterface::class;
+            case self::CONTAINER:
+                return ContainerInterface::class;
             default:
                 throw MalformedParameter::create($delta);
         }
@@ -50,6 +54,8 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
                 return config('permission.table_names.permissions');
             case self::ROLE:
                 return config('permission.table_names.roles');
+            case self::CONTAINER:
+                return config('permission.table_names.containers');
             default:
                 throw MalformedParameter::create($delta);
         }
@@ -66,6 +72,8 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
                 return PermissionInterface::ALL_STATES;
             case self::ROLE:
                 return RoleInterface::ALL_STATES;
+            case self::CONTAINER:
+                return ContainerInterface::ALL_STATES;
             default:
                 throw MalformedParameter::create($delta);
         }
@@ -185,10 +193,6 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
 
         $query = $this->getModel()->query()->where(['guard_name' => $this->usedGuard()]);
 
-        if($type && $this->delta() == self::SECTION){
-            $query->where('section_type_id', $type);
-        }
-
         return Datatable::of($query)->make(true);
     }
 
@@ -267,10 +271,6 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
 
         $validationArrayRuleIn = ['state', 'label'];
 
-        if($this->delta() == self::SECTION){
-            $validationArrayRuleIn[] = 'section_type_id';
-        }
-
         if($this->isSuperuser()){
             $validationArrayRuleIn[] = 'name';
         }
@@ -308,14 +308,6 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
                     ],
                     'locale' => [
                         'required'
-                    ]
-                ]);
-                break;
-            case 'section_type_id':
-                $this->validate($request, [
-                    $field => [
-                        'required',
-                        'exists:'.$this->getTableName().',id'
                     ]
                 ]);
                 break;
