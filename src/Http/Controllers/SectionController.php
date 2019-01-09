@@ -179,6 +179,10 @@ class SectionController extends PermissionRoleSectionController
                 'required',
                 'min:2',
                 'max:5'
+            ],
+            'superadmin' => [
+                'required',
+                'boolean'
             ]
         ]);
 
@@ -197,6 +201,7 @@ class SectionController extends PermissionRoleSectionController
         $code = str_slug($request->input('code'));
         $state = $request->input('state');
         $locale = $request->input('locale');
+        $superadmin = $request->input('superadmin');
 
         try{
             $section = app(SectionContract::class)->findByName($code, $this->usedGuard());
@@ -219,6 +224,7 @@ class SectionController extends PermissionRoleSectionController
         ];
         $section->name = $code;
         $section->state = $state;
+        $section->superadmin = $superadmin;
         $section->section_id = $parent ? $parent->id : null;
         $section->order = 0;
 
@@ -246,7 +252,7 @@ class SectionController extends PermissionRoleSectionController
         $this->validate($request, [
             'field' => [
                 'required',
-                Rule::in(['code', 'name', 'state'])
+                Rule::in(['code', 'name', 'state', 'superadmin'])
             ],
             'section' => [
                 'required'
@@ -285,6 +291,8 @@ class SectionController extends PermissionRoleSectionController
                 return $this->changeName($section, $value, $locale);
             case 'state':
                 return $this->changeState($section, $value);
+            case 'superadmin':
+                return $this->changeSuperadmin($section, $value);
             default:
                 throw new \Exception("'{$field}' is a unknown field");
         }
@@ -324,6 +332,18 @@ class SectionController extends PermissionRoleSectionController
         }
 
         $section->state = $value;
+        $section->save();
+    }
+
+    private function changeSuperadmin(SectionContract $section, $value)
+    {
+        if(!is_bool($value)){
+            return response()->json([
+                'note' => 'superadmin is not boolean'
+            ], HttpCodes::UNPROCESSABLE_ENTITY);
+        }
+
+        $section->superadmin = $value;
         $section->save();
     }
 }

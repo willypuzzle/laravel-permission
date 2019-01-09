@@ -77,7 +77,7 @@ class CreatePermissionTables extends Migration
             $table->integer('id')->autoIncrement()->unique()->unsigned();
             $table->integer('container_id')->unsigned();
             $table->integer('section_id')->unsigned();
-            $table->boolean('superadmin')->default(false);
+            $table->boolean('superadmin')->nullable();
 
             $table->foreign('section_id')
                 ->references('id')

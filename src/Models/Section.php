@@ -24,6 +24,7 @@ class Section extends Model implements SectionContract
     protected $casts = [
         'label' => 'array',
         'meta' => 'array',
+        'superadmin' => 'boolean'
     ];
 
     public function __construct(array $attributes = [])
