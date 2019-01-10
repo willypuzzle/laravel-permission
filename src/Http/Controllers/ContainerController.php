@@ -13,4 +13,9 @@ class ContainerController extends PermissionRoleSectionContainerController
     {
         return self::CONTAINER;
     }
+
+    public function labels()
+    {
+        return config('permission.container.labels');
+    }
 }

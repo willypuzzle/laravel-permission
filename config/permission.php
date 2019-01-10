@@ -29,6 +29,23 @@ return [
         ]
     ],
 
+
+    'labels' => [
+        'container' => [
+            'name' => [
+                'plural' => [
+                    'it' => 'Siti',
+                    'en' => 'Containers'
+                ],
+                'singular' => [
+                    'it' => 'Sito',
+                    'en' => 'Container'
+                ]
+            ]
+        ],
+    ],
+
+
     'models' => [
 
         /*

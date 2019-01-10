@@ -25,6 +25,10 @@ class Support
             ->middleware('auth:'.($guard ? $guard : config('auth.defaults.guard')))
             ->prefix('/acl')
             ->group(function (){
+                Route::prefix('/labels')->group(function (){
+                    Route::get('/all', 'LabelsController@all');
+                });
+
                 Route::prefix('/sections')->group(function (){
                     Route::get('/get-tree', 'SectionController@getTree');
                     Route::delete('/delete/{modelId}', 'SectionController@delete');
