@@ -36,6 +36,10 @@ class Support
                     Route::post('/add', 'SectionController@add');
                     Route::put('/change', 'SectionController@change');
                 });
+
+                Route::prefix('/containers')->group(function (){
+                    Route::get('/data', 'ContainerController@data');
+                });
             });
     }
 }
