@@ -39,6 +39,7 @@ class Support
 
                 Route::prefix('/containers')->group(function (){
                     Route::get('/data', 'ContainerController@data');
+                    Route::post('/create', 'ContainerController@create');
                 });
             });
     }

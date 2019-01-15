@@ -176,7 +176,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
 
         $model->save();
 
-        return response()->setStatusCode(HttpCodes::CREATED);
+        return response()->json([], HttpCodes::CREATED);
     }
 
     /**
