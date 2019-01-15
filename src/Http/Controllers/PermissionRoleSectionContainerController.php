@@ -279,6 +279,10 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
             'field' => [
                 'required',
                 Rule::in($validationArrayRuleIn)
+            ],
+            'locale' => [
+                'min:2',
+                'max:5'
             ]
         ]);
 
@@ -324,6 +328,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
         unset($data['field']);
 
         if($field != 'label'){
+            unset($data['locale']);
             $model->update($data);
         }else{
             $label = $model->label;
