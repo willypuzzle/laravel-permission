@@ -40,7 +40,8 @@ class Support
                 Route::prefix('/containers')->group(function (){
                     Route::get('/data', 'ContainerController@data');
                     Route::post('/create', 'ContainerController@create');
-                    Route::put('/updateField/{modelId}', 'ContainerController@update');
+                    Route::put('/update-field/{modelId}', 'ContainerController@update');
+                    Route::get('/get-sections-tree/{containerId}', 'ContainerController@getSectionsTree');
                 });
             });
     }
