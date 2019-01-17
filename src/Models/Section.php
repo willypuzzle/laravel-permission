@@ -242,7 +242,9 @@ class Section extends Model implements SectionContract
         if($global){
             $query = static::where('guard_name', $container);
         }else{
-            $query = $container->sections();
+            $query = static::where('guard_name', $container->guard_name);
+            $query = $query->with('containers');
+            $deltaSections = $container->sections()->get()->toArray();
         }
 
         $query = $query->where(config('permission.table_names.sections').'.section_id', $rootId);
@@ -252,10 +254,19 @@ class Section extends Model implements SectionContract
             $query = $query->where('state', SectionContract::ENABLED);
         }
 
-        $data = $query->get()->all();
+        $data = $query->get()->toArray();
+        if(isset($deltaSections)){
+            $deltaSectionsIds = array_map(function ($el){
+                return $el['id'];
+            }, $deltaSections);
+            $data = array_map(function ($el) use ($deltaSectionsIds){
+                $el['is'] = in_array($el['id'], $deltaSectionsIds);
+                return $el;
+            }, $data);
+        }
         $return = [];
         foreach ($data as $model){
-            $children = self::tree($container, $onlyEnabled, $model->id, $global);
+            $children = self::tree($container, $onlyEnabled, $model['id'], $global);
             $return[] = [
                 'model' => $model,
                 'children' => $children

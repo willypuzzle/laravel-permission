@@ -42,6 +42,8 @@ class Support
                     Route::post('/create', 'ContainerController@create');
                     Route::put('/update-field/{modelId}', 'ContainerController@update');
                     Route::get('/get-sections-tree/{containerId}', 'ContainerController@getSectionsTree');
+                    Route::post('/set-enabled-sections/{containerId}', 'ContainerController@setEnabledSections');
+                    Route::post('/set-section-superadmin/{containerId}/{sectionId}', 'ContainerController@setSectionSuperadmin');
                 });
             });
     }
