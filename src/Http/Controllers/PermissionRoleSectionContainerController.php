@@ -232,6 +232,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
      * @param Request $request
      * @throws AuthenticationException
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     * @deprecated
      */
     public function multi_delete(Request $request)
     {
@@ -253,6 +254,34 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
 
         foreach (json_decode($validatedData['items'], true) as $item){
             $model = $this->getModel()->where(['id' => $item['id'], 'guard_name' => $this->usedGuard()])->firstOrFail();
+            $model->delete();
+        }
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    public function deleteAdvanced(Request $request)
+    {
+        $this->checkForPermittedRoles();
+
+        $validatedData = $request->validate([
+            'items' => 'required|array'
+        ]);
+
+        foreach ($validatedData['items'] as $item){
+            if($this->delta() == self::ROLE && !$this->isSuperuser()){
+                $model = $this->getModel()->find($item);
+                if($model->name == config('permission.roles.superuser')){
+                    return response()->json([], HttpCodes::FORBIDDEN);
+                }
+            }
+        }
+
+        foreach ($validatedData['items'] as $item){
+            $model = $this->getModel()->where(['id' => $item, 'guard_name' => $this->usedGuard()])->firstOrFail();
             $model->delete();
         }
     }

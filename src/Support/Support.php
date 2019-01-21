@@ -40,6 +40,7 @@ class Support
                 Route::prefix('/containers')->group(function (){
                     Route::get('/data', 'ContainerController@data');
                     Route::post('/create', 'ContainerController@create');
+                    Route::delete('/delete', 'ContainerController@deleteAdvanced');
                     Route::put('/update-field/{modelId}', 'ContainerController@update');
                     Route::get('/get-sections-tree/{containerId}', 'ContainerController@getSectionsTree');
                     Route::post('/set-enabled-sections/{containerId}', 'ContainerController@setEnabledSections');
@@ -49,6 +50,7 @@ class Support
                 Route::prefix('/permissions')->group(function (){
                     Route::get('/data', 'PermissionController@data');
                     Route::post('/create', 'PermissionController@create');
+                    Route::delete('/delete', 'PermissionController@deleteAdvanced');
                     Route::put('/update-field/{modelId}', 'PermissionController@update');
                 });
             });
