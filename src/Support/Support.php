@@ -45,6 +45,12 @@ class Support
                     Route::post('/set-enabled-sections/{containerId}', 'ContainerController@setEnabledSections');
                     Route::post('/set-section-superadmin/{containerId}/{sectionId}', 'ContainerController@setSectionSuperadmin');
                 });
+
+                Route::prefix('/permissions')->group(function (){
+                    Route::get('/data', 'PermissionController@data');
+                    Route::post('/create', 'PermissionController@create');
+                    Route::put('/update-field/{modelId}', 'PermissionController@update');
+                });
             });
     }
 }
