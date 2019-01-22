@@ -94,6 +94,26 @@ class CreatePermissionTables extends Migration
             $table->unique(['section_id', 'container_id'], $tableNames['container_section'].'_unique_key');
         });
 
+        Schema::create($tableNames['container_role'], function (Blueprint $table) use ($tableNames){
+            $table->integer('id')->autoIncrement()->unique()->unsigned();
+            $table->integer('container_id')->unsigned();
+            $table->integer('role_id')->unsigned();
+
+            $table->foreign('role_id')
+                ->references('id')
+                ->on($tableNames['roles'])
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->foreign('container_id')
+                ->references('id')
+                ->on($tableNames['containers'])
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->unique(['role_id', 'container_id'], $tableNames['container_role'].'_unique_key');
+        });
+
         Schema::create($tableNames['model_has_permissions'], function (Blueprint $table) use ($tableNames) {
             $table->integer('id')->autoIncrement()->unique()->unsigned();
             $table->integer('permission_id')->unsigned();

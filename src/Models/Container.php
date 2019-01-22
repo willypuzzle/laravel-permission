@@ -116,6 +116,18 @@ class Container extends Model implements ContainerInterface
         return $relationship;
     }
 
+    public function roles()
+    {
+        return $this->belongsToMany(
+            config('permission.model.role'),
+            config('permission.table_names.container_role'),
+            'container_id',
+            'role_id',
+            'id',
+            'id'
+        );
+    }
+
     public function sections() : BelongsToMany
     {
         $relationship = $this->belongsToMany(

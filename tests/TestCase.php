@@ -126,7 +126,7 @@ abstract class TestCase extends Orchestra
             $table->integer('state')->default(1)->comment('0 = disabled, 1 = enabled');
         });
 
-        include_once __DIR__.'/../database/migrations/create_permission_tables.php.stub';
+        include_once __DIR__ . '/../database/migrations/create_permission_tables.php.stub';
 
         (new \CreatePermissionTables())->up();
 
