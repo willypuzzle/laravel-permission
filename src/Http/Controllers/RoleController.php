@@ -6,7 +6,7 @@ class RoleController extends PermissionRoleSectionContainerController
 {
     public function __construct()
     {
-        $this->addPermittedRoles([config('permission.roles.superuser'), config('permission.roles.admin')]);
+        $this->addPermittedRoles([config('permission.roles.superuser')]);
     }
 
     protected function delta() : string
