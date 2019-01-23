@@ -101,7 +101,7 @@ class Role extends Model implements RoleContract
     public function containers()
     {
         return $this->belongsToMany(
-            config('permission.model.container'),
+            config('permission.models.container'),
             config('permission.table_names.container_role'),
             'role_id',
             'container_id',

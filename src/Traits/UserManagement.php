@@ -67,8 +67,18 @@ trait UserManagement{
      */
     protected function isSuperuser()
     {
-        return $this->getLoggedUser()->roles()->get()->filter(function ($el){
-                return $el->name == config('permission.roles.superuser');
+        return $this->isRole(config('permission.roles.superuser'));
+    }
+
+    protected function isAdmin()
+    {
+        return $this->isRole(config('permission.roles.admin'));
+    }
+
+    protected function isRole($role)
+    {
+        return $this->getLoggedUser()->roles()->get()->filter(function ($el) use ($role){
+                return $el->name == $role;
             })->count() > 0;
     }
 }

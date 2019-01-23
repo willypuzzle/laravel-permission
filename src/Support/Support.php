@@ -38,6 +38,7 @@ class Support
                 });
 
                 Route::prefix('/containers')->group(function (){
+                    Route::get('/all', 'ContainerController@all');
                     Route::get('/data', 'ContainerController@data');
                     Route::post('/create', 'ContainerController@create');
                     Route::delete('/delete', 'ContainerController@deleteAdvanced');
@@ -59,6 +60,14 @@ class Support
                     Route::post('/create', 'RoleController@create');
                     Route::delete('/delete', 'RoleController@deleteAdvanced');
                     Route::put('/update-field/{modelId}', 'RoleController@update');
+                });
+
+                Route::prefix('/sweeten-roles')->group(function (){
+                    Route::get('/data', 'SweetenRoleController@data');
+                    Route::post('/create', 'SweetenRoleController@create');
+                    Route::delete('/delete', 'SweetenRoleController@deleteAdvanced');
+                    Route::put('/update-field/{modelId}', 'SweetenRoleController@update');
+                    Route::post('/set-containers/{roleId}', 'SweetenRoleController@setContainers');
                 });
             });
     }

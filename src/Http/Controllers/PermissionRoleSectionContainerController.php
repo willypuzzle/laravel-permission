@@ -61,7 +61,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
         }
     }
 
-    private function getInterfaceAllStates()
+    protected function getInterfaceAllStates()
     {
         $delta = $this->delta();
 
@@ -96,7 +96,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
 
         if($this->delta() == self::ROLE && !$this->isSuperuser()){
             $collection = $collection->filter(function ($el){
-                return $el->name != config('permission.roles.superuser');
+                return !$this->filterModel($el);
             });
         }
 
@@ -208,7 +208,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
         $model = $this->getModel()->where(['id' => $modelId, 'guard_name' => $this->usedGuard()])->firstOrFail();
 
         if($this->delta() == self::ROLE && !$this->isSuperuser()){
-            if($model->name == config('permission.roles.superuser')){
+            if($this->filterModel($model)){
                 return response()->json([], HttpCodes::FORBIDDEN);
             }
         }
@@ -271,10 +271,10 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
             'items' => 'required|array'
         ]);
 
-        foreach ($validatedData['items'] as $item){
-            if($this->delta() == self::ROLE && !$this->isSuperuser()){
+        if($this->delta() == self::ROLE && !$this->isSuperuser()){
+            foreach ($validatedData['items'] as $item){
                 $model = $this->getModel()->find($item);
-                if($model->name == config('permission.roles.superuser')){
+                if($this->filterModel($model)){
                     return response()->json([], HttpCodes::FORBIDDEN);
                 }
             }
@@ -348,8 +348,8 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
 
         $data = $request->all();
 
-        if($this->delta() == self::ROLE && $data['field'] == 'state'){
-            if($model->name == config('permission.roles.superuser')){
+        if($this->delta() == self::ROLE && !$this->isSuperuser()){
+            if($this->filterModel($model)){
                 return response()->json([], HttpCodes::FORBIDDEN);
             }
         }
@@ -366,6 +366,11 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
             $model->save();
         }
 
+    }
+
+    protected function filterModel($model)
+    {
+        return $model->name == config('permission.roles.superuser') || $model->name == config('permission.roles.admin');
     }
 
     abstract protected function delta() : string;
