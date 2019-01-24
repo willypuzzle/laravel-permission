@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use DB;
 use Illuminate\Support\Collection;
 use function Idsign\Permission\Helpers\getModelForGuard;
+use Idsign\Permission\Contracts\Container as ContainerInterface;
+use Idsign\Permission\Contracts\Section as SectionInterface;
 
 class Role extends Model implements RoleContract
 {
@@ -193,5 +195,25 @@ class Role extends Model implements RoleContract
     public function scopeEnabled($query, $state = RoleContract::ENABLED)
     {
         return $query->where('state', $state);
+    }
+
+    public function permissionsTree(ContainerInterface $container)
+    {
+        $tree = app(SectionInterface::class)->containerTree($container, false);
+
+        $tree = $this->permissionBuilder($tree, $container);
+
+        return $tree;
+    }
+
+    private function permissionBuilder($tree, $container)
+    {
+        return array_map(function ($el) use ($container){
+            $el['permissions'] = $this->permissions($el['model']['id'], $container->id)->get()->toArray();
+            if(isset($el['children']) && is_array($el['children']) && count($el['children'])){
+                $el['children'] = $this->permissionBuilder($el['children'], $container);
+            }
+            return $el;
+        }, $tree);
     }
 }

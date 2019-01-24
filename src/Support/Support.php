@@ -68,6 +68,7 @@ class Support
                     Route::delete('/delete', 'SweetenRoleController@deleteAdvanced');
                     Route::put('/update-field/{modelId}', 'SweetenRoleController@update');
                     Route::post('/set-containers/{roleId}', 'SweetenRoleController@setContainers');
+                    Route::get('/get-container-data/{roleId}/{containerId}', 'SweetenRoleController@getContainerData');
                 });
             });
     }

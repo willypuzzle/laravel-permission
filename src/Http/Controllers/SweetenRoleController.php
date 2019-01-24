@@ -3,6 +3,7 @@
 namespace Idsign\Permission\Http\Controllers;
 
 use Idsign\Permission\Exceptions\UnsupportedDatabaseType;
+use Idsign\Permission\Contracts\Section as SectionInterface;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Idsign\Vuetify\Facades\Datatable;
@@ -109,5 +110,17 @@ class SweetenRoleController extends PermissionRoleSectionContainerController
         }
 
         $role->containers()->sync($request->input('containers'));
+    }
+
+    public function getContainerData($roleId, $containerId)
+    {
+        $role = app(RoleInterface::class)->where('id', $roleId)->firstOrFail();
+
+        $container = $role->containers()->where(config('permission.table_names.containers').'.id', $containerId)->firstOrFail();
+
+        return [
+            'container' => $container->toArray(),
+            'tree' => $role->permissionsTree($container)
+        ];
     }
 }
