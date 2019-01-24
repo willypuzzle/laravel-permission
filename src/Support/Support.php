@@ -49,6 +49,7 @@ class Support
                 });
 
                 Route::prefix('/permissions')->group(function (){
+                    Route::get('/all', 'PermissionController@all');
                     Route::get('/data', 'PermissionController@data');
                     Route::post('/create', 'PermissionController@create');
                     Route::delete('/delete', 'PermissionController@deleteAdvanced');
