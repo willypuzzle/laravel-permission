@@ -3,13 +3,15 @@
 namespace Idsign\Permission\Http\Controllers;
 
 use Idsign\Permission\Exceptions\UnsupportedDatabaseType;
-use Idsign\Permission\Contracts\Section as SectionInterface;
+use Idsign\Permission\Models\Role;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Idsign\Vuetify\Facades\Datatable;
 use Illuminate\Validation\Rule;
 use Willypuzzle\Helpers\Contracts\HttpCodes;
-use Idsign\Permission\Contracts\Role as RoleInterface;
+use Idsign\Permission\Contracts\Permission as PermissionInterface;
+use Idsign\Permission\Contracts\Section as SectionInterface;
+use Idsign\Permission\Contracts\Container as ContainerInterface;
 
 class SweetenRoleController extends PermissionRoleSectionContainerController
 {
@@ -93,6 +95,13 @@ class SweetenRoleController extends PermissionRoleSectionContainerController
         return response()->json([], HttpCodes::CREATED);
     }
 
+    /**
+     * @param Request $request
+     * @param $roleId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function setContainers(Request $request, $roleId)
     {
         $this->validate($request, [
@@ -101,7 +110,7 @@ class SweetenRoleController extends PermissionRoleSectionContainerController
             ]
         ]);
 
-        $role = app(RoleInterface::class)->where('id', $roleId)->firstOrFail();
+        $role = $this->getRole($roleId);
 
         if(!$this->isSuperuser()){
             if($this->filterModel($role)){
@@ -112,15 +121,88 @@ class SweetenRoleController extends PermissionRoleSectionContainerController
         $role->containers()->sync($request->input('containers'));
     }
 
+    /**
+     * @param $roleId
+     * @param $containerId
+     * @return array
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
     public function getContainerData($roleId, $containerId)
     {
-        $role = app(RoleInterface::class)->where('id', $roleId)->firstOrFail();
+        $role = $this->getRole($roleId);
 
         $container = $role->containers()->where(config('permission.table_names.containers').'.id', $containerId)->firstOrFail();
 
         return [
             'container' => $container->toArray(),
-            'tree' => $role->permissionsTree($container)
+            'tree' => $role->permissionsTree($container, !$this->isSuperuser())
         ];
+    }
+
+    /**
+     * @param Request $request
+     * @param $roleId
+     * @param $containerId
+     * @param $sectionId
+     * @param $permissionId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function setPermission(Request $request, $roleId, $containerId, $sectionId, $permissionId)
+    {
+        $this->validate($request, [
+            'value' => [
+                'required',
+                'boolean'
+            ]
+        ]);
+
+        $role = $this->getRole($roleId);
+
+        if(!$this->isSuperuser()){
+            if($this->filterModel($role)){
+                return response()->json([], HttpCodes::FORBIDDEN);
+            }
+        }
+
+        $permission = app(PermissionInterface::class)->where([
+            'id' => $permissionId,
+            'guard_name' => $this->usedGuard()
+        ])->firstOrFail();
+
+        $container = app(ContainerInterface::class)->where([
+            'id' => $containerId,
+            'guard_name' => $this->usedGuard()
+        ])->firstOrFail();
+
+        $section = app(SectionInterface::class)->where([
+            'id' => $sectionId,
+            'guard_name' => $this->usedGuard()
+        ])->firstOrFail();
+
+        if(!$this->isSuperuser()){
+            $relatedContainer = $section->containers()->where(config('permission.table_names.containers').'.id', $container->id)->first();
+            $superadmin = null;
+            if($relatedContainer->pivot->superadmin === null){
+                $superadmin = $section->superadmin;
+            }else{
+                $superadmin = $relatedContainer->pivot->superadmin;
+            }
+            if($superadmin){
+                return response()->json([], HttpCodes::CONFLICT);
+            }
+        }
+
+        if($request->input('value')){
+            $role->givePermissionTo($permission, $section, $container);
+        }else{
+            $role->revokePermissionTo($permission, $section, $container);
+        }
+    }
+
+    private function getRole($roleId) : Role
+    {
+        return $this->getModel()->where('id', $roleId)->firstOrFail();
     }
 }

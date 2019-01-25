@@ -197,23 +197,39 @@ class Role extends Model implements RoleContract
         return $query->where('state', $state);
     }
 
-    public function permissionsTree(ContainerInterface $container)
+    public function permissionsTree(ContainerInterface $container, $checkSuperadmin = true)
     {
         $tree = app(SectionInterface::class)->containerTree($container, false);
 
-        $tree = $this->permissionBuilder($tree, $container);
+        $tree = $this->permissionBuilder($tree, $container, $checkSuperadmin);
 
         return $tree;
     }
 
-    private function permissionBuilder($tree, $container)
+    private function permissionBuilder($tree, $container, $checkSuperadmin)
     {
-        return array_map(function ($el) use ($container){
+        return array_map(function ($el) use ($container, $checkSuperadmin){
             $el['permissions'] = $this->permissions($el['model']['id'], $container->id)->get()->toArray();
+            $el['superadmin'] = $checkSuperadmin ? $this->elaborateSuperadmin($el, $container) : null;
             if(isset($el['children']) && is_array($el['children']) && count($el['children'])){
-                $el['children'] = $this->permissionBuilder($el['children'], $container);
+                $el['children'] = $this->permissionBuilder($el['children'], $container, $checkSuperadmin);
             }
             return $el;
         }, $tree);
+    }
+
+    private function elaborateSuperadmin($element, $container)
+    {
+        $relativeSuperadmin = array_filter($element['model']['containers'] ?? [], function ($el) use ($container){
+            return $el['id'] == $container->id;
+        });
+
+        $relativeSuperadmin = isset($relativeSuperadmin[0]['pivot']['superadmin']) ? $relativeSuperadmin[0]['pivot']['superadmin'] : null;
+
+        if($relativeSuperadmin === null){
+            return $element['model']['superadmin'];
+        }
+
+        return $relativeSuperadmin;
     }
 }

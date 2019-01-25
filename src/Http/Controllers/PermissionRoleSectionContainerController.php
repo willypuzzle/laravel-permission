@@ -90,7 +90,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
      */
     public function all(Request $request){
-        $this->checkForPermittedRoles();
+        // $this->checkForPermittedRoles();
 
         $collection = $this->getModel()->where(['guard_name' => $this->usedGuard()])->get();
 

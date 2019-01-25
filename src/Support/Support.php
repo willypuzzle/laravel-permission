@@ -66,6 +66,7 @@ class Support
                 Route::prefix('/sweeten-roles')->group(function (){
                     Route::get('/data', 'SweetenRoleController@data');
                     Route::post('/create', 'SweetenRoleController@create');
+                    Route::post('/set-permission/{roleId}/{containerId}/{sectionId}/{permissionId}', 'SweetenRoleController@setPermission');
                     Route::delete('/delete', 'SweetenRoleController@deleteAdvanced');
                     Route::put('/update-field/{modelId}', 'SweetenRoleController@update');
                     Route::post('/set-containers/{roleId}', 'SweetenRoleController@setContainers');
