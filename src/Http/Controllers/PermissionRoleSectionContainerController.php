@@ -92,7 +92,9 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
     public function all(Request $request){
         // $this->checkForPermittedRoles();
 
-        $collection = $this->getModel()->where(['guard_name' => $this->usedGuard()])->get();
+        $collection = $this->getModel()
+                           ->where(['guard_name' => $this->usedGuard()])
+                           ->get();
 
         if($this->delta() == self::ROLE && !$this->isSuperuser()){
             $collection = $collection->filter(function ($el){
@@ -113,11 +115,15 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
 
     public static function sorter($el1, $el2, $locale = null)
     {
+        $order1 = $el1->meta['order'] ?? false;
+        $order2 = $el2->meta['order'] ?? false;
+        if($order1 !== false && $order2 !== false){
+            return $order1 - $order2;
+        }
+
         if($locale){
             $el1Key = isset($el1->label[$locale]) ? $el1->label[$locale] : $el1->name;
             $el2Key = isset($el2->label[$locale]) ? $el2->label[$locale] : $el2->name;
-
-
         }else{
             $el1Key = $el1->name;
             $el2Key = $el2->name;

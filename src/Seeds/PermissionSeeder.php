@@ -28,21 +28,30 @@ class PermissionSeeder extends Seeder
             'it' => "Lettura",
             'en' => "Read"
         ];
+        $read->meta = [
+            'order' => 1
+        ];
         $read->save();
 
         $create = new PermissionModel();
         $create->name = PermissionContract::CREATE;
         $create->label = [
-            'it' => "Creazione",
+            'it' => "Scrittura",
             'en' => "Create"
+        ];
+        $create->meta = [
+            'order' => 2
         ];
         $create->save();
 
         $update = new PermissionModel();
         $update->name = PermissionContract::UPDATE;
         $update->label = [
-            'it' => "Aggiornamento",
+            'it' => "Modifica",
             'en' => "Update"
+        ];
+        $update->meta = [
+            'order' => 3
         ];
         $update->save();
 
@@ -51,6 +60,9 @@ class PermissionSeeder extends Seeder
         $delete->label = [
             'it' => "Cancellazione",
             'en' => "delete"
+        ];
+        $delete->meta = [
+            'order' => 4
         ];
         $delete->save();
     }

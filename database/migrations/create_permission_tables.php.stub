@@ -208,6 +208,7 @@ class CreatePermissionTables extends Migration
         Schema::dropIfExists($tableNames['model_has_roles']);
         Schema::dropIfExists($tableNames['model_has_permissions']);
         Schema::dropIfExists($tableNames['container_section']);
+        Schema::dropIfExists($tableNames['container_role']);
         Schema::dropIfExists($tableNames['roles']);
         Schema::dropIfExists($tableNames['sections']);
         Schema::dropIfExists($tableNames['permissions']);
