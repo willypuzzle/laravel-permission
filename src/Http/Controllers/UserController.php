@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Http\Controllers;
 
+use Idsign\Libraries\Config;
 use Idsign\Permission\Contracts\Role;
 use Idsign\Vuetify\Facades\Datatable;
 use Illuminate\Http\Request;
@@ -16,6 +17,11 @@ abstract class UserController extends RoleCheckerController
     public function __construct()
     {
         $this->addPermittedRoles([config('permission.roles.superuser'), config('permission.roles.admin')]);
+    }
+
+    public function config()
+    {
+        return Config::userConfig();
     }
 
     /**

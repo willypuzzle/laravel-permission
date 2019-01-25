@@ -26,6 +26,15 @@ return [
                 'enabled' => [1],
                 'default' => false //if any of the above values is catched this will be the result of isEnabled function
             ]
+        ],
+        'name' => [
+            'field_name' => 'name'
+        ],
+        'surname' => [
+            'field_name' => 'name'
+        ],
+        'password' => [
+            'field_name' => 'password'
         ]
     ],
 

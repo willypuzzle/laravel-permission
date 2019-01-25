@@ -72,6 +72,10 @@ class Support
                     Route::post('/set-containers/{roleId}', 'SweetenRoleController@setContainers');
                     Route::get('/get-container-data/{roleId}/{containerId}', 'SweetenRoleController@getContainerData');
                 });
+
+                Route::prefix('/users')->group(function (){
+                    Route::get('/config', 'UserController@config');
+                });
             });
     }
 }
