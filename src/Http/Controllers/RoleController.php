@@ -2,6 +2,8 @@
 
 namespace Idsign\Permission\Http\Controllers;
 
+use Idsign\Libraries\Config;
+
 class RoleController extends PermissionRoleSectionContainerController
 {
     public function __construct()
@@ -12,5 +14,10 @@ class RoleController extends PermissionRoleSectionContainerController
     protected function delta() : string
     {
         return self::ROLE;
+    }
+
+    public function config()
+    {
+        return Config::rolesConfig();
     }
 }

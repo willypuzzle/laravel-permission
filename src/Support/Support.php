@@ -58,6 +58,7 @@ class Support
 
                 Route::prefix('/roles')->group(function (){
                     Route::get('/data', 'RoleController@data');
+                    Route::get('/config', 'RoleController@config');
                     Route::post('/create', 'RoleController@create');
                     Route::delete('/delete', 'RoleController@deleteAdvanced');
                     Route::put('/update-field/{modelId}', 'RoleController@update');
