@@ -31,7 +31,7 @@ return [
             'field_name' => 'name'
         ],
         'surname' => [
-            'field_name' => 'name'
+            'field_name' => 'surname'
         ],
         'password' => [
             'field_name' => 'password'

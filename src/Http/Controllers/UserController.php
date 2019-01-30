@@ -25,6 +25,18 @@ abstract class UserController extends RoleCheckerController
     }
 
     /**
+     * @return array
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    public function loggedUser()
+    {
+        $userModel = $this->getLoggedUser();
+        $userArray = $userModel->toArray();
+        $userArray['roles'] = $userModel->roles->toArray();
+        return $userArray;
+    }
+
+    /**
      * @return \Illuminate\Http\JsonResponse
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
      * @throws \Illuminate\Auth\AuthenticationException
