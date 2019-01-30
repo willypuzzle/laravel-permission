@@ -3,6 +3,7 @@
 namespace Idsign\Permission\Test;
 
 use Idsign\Permission\Contracts\Role;
+use Idsign\Permission\Libraries\Config;
 use Idsign\Permission\Models\Container;
 use Idsign\Permission\Models\Permission;
 use Idsign\Permission\Exceptions\GuardDoesNotMatch;
@@ -229,8 +230,8 @@ class RoleTest extends TestCase
 
         $role->delete();
 
-        $this->assertCount(0, DB::table(config('permission.table_names.role_has_permissions'))->where('role_id', $roleId)->get());
-        $this->assertCount(0, DB::table(config('permission.table_names.model_has_roles'))->where('role_id', $roleId)->get());
+        $this->assertCount(0, DB::table(Config::roleHasPermissionsTable())->where('role_id', $roleId)->get());
+        $this->assertCount(0, DB::table(Config::modelHasRolesTable())->where('role_id', $roleId)->get());
 
     }
 }

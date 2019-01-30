@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Http\Controllers;
 
+use Idsign\Permission\Libraries\Config;
 use Illuminate\Http\Request;
 use Idsign\Permission\Contracts\Section as SectionInterface;
 use Idsign\Permission\Contracts\Container as ContainerInterface;
@@ -11,7 +12,7 @@ class ContainerController extends PermissionRoleSectionContainerController
 {
     public function __construct()
     {
-        $this->addPermittedRoles([config('permission.roles.superuser')]);
+        $this->addPermittedRoles([Config::superuser()]);
     }
 
     protected function delta() : string
@@ -19,10 +20,10 @@ class ContainerController extends PermissionRoleSectionContainerController
         return self::CONTAINER;
     }
 
-    public function labels()
+    /*public function labels()
     {
         return config('permission.container.labels');
-    }
+    }*/
 
     /**
      * @param Request $request
@@ -87,7 +88,7 @@ class ContainerController extends PermissionRoleSectionContainerController
 
         $container = $this->getContainer($containerId);
 
-        $section = $container->sections()->where(config('permission.table_names.sections').'.id', $sectionId)->firstOrFail();
+        $section = $container->sections()->where(Config::sectionsTable().'.id', $sectionId)->firstOrFail();
 
         $value = $request->input('value');
 

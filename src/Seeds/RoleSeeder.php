@@ -12,6 +12,7 @@ use Idsign\Permission\Models\Role;
 use Illuminate\Database\Seeder;
 use Idsign\Permission\Models\Permission as PermissionModel;
 use Idsign\Permission\Contracts\Permission as PermissionContract;
+use Idsign\Permission\Libraries\Config;
 
 class RoleSeeder extends Seeder
 {
@@ -25,7 +26,7 @@ class RoleSeeder extends Seeder
         //
         $superuser = new Role();
         $superuser->fill([
-            'name' => config('permission.roles.superuser'),
+            'name' => Config::superuser(),
             'label' => [
                 'it' => 'Superutente',
                 'en' => 'Superuser'
@@ -35,7 +36,7 @@ class RoleSeeder extends Seeder
 
         $admin = new Role();
         $admin->fill([
-            'name' => config('permission.roles.admin'),
+            'name' => Config::admin(),
             'label' => [
                 'it' => 'Amministratore',
                 'en' => 'Administrator'
@@ -45,7 +46,7 @@ class RoleSeeder extends Seeder
 
         $operator = new Role();
         $operator->fill([
-            'name' => config('permission.roles.operator'),
+            'name' => Config::operator(),
             'label' => [
                 'it' => 'Operatore',
                 'en' => 'Operator'

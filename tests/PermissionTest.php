@@ -4,6 +4,7 @@ namespace Idsign\Permission\Test;
 
 use Idsign\Permission\Contracts\Permission;
 use Idsign\Permission\Exceptions\PermissionAlreadyExists;
+use Idsign\Permission\Libraries\Config;
 use Idsign\Permission\Models\Container;
 use Idsign\Permission\Models\Section as SectionModel;
 use Idsign\Permission\Models\Permission as PermissionModel;
@@ -151,8 +152,8 @@ class PermissionTest extends TestCase
 
         $permission->delete();
 
-        $this->assertCount(0, DB::table(config('permission.table_names.role_has_permissions'))->where('permission_id', $permissionId)->get());
-        $this->assertCount(0, DB::table(config('permission.table_names.model_has_permissions'))->where('permission_id', $permissionId)->get());
+        $this->assertCount(0, DB::table(Config::roleHasPermissionsTable())->where('permission_id', $permissionId)->get());
+        $this->assertCount(0, DB::table(Config::modelHasPermissionsTable())->where('permission_id', $permissionId)->get());
 
     }
 }

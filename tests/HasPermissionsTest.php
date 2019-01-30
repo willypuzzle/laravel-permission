@@ -7,6 +7,7 @@ use Idsign\Permission\Contracts\Role;
 use Idsign\Permission\Contracts\Section;
 use Idsign\Permission\Exceptions\GuardDoesNotMatch;
 use Idsign\Permission\Exceptions\PermissionDoesNotExist;
+use Idsign\Permission\Libraries\Config;
 
 class HasPermissionsTest extends TestCase
 {
@@ -25,9 +26,9 @@ class HasPermissionsTest extends TestCase
     {
         $this->testUser->givePermissionTo($this->testUserPermission, $this->testUserSection, $this->testUserContainer);
 
-        $stateField = config('permission.user.state.field_name');
+        $stateField = Config::userStateFieldName();
 
-        $this->testUser->$stateField = config('permission.user.state.values.disabled')[0];
+        $this->testUser->$stateField = Config::userStateDisabled()[0];
 
         $this->testUser->save();
 

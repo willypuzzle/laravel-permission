@@ -8,6 +8,7 @@ use Idsign\Permission\Contracts\Role as RoleInterface;
 use Idsign\Permission\Contracts\Container as ContainerInterface;
 use Idsign\Permission\Exceptions\MalformedParameter;
 use Idsign\Permission\Exceptions\UnsupportedDatabaseType;
+use Idsign\Permission\Libraries\Config;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -49,13 +50,13 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
 
         switch ($delta){
             case self::SECTION:
-                return config('permission.table_names.sections');
+                return Config::sectionsTable();
             case self::PERMISSION:
-                return config('permission.table_names.permissions');
+                return Config::permissionsTable();
             case self::ROLE:
-                return config('permission.table_names.roles');
+                return Config::rolesTable();
             case self::CONTAINER:
-                return config('permission.table_names.containers');
+                return Config::containersTable();
             default:
                 throw MalformedParameter::create($delta);
         }
@@ -252,7 +253,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
             $model = $this->getModel()->find($item['id']);
 
             if($this->delta() == self::ROLE && !$this->isSuperuser()){
-                if($model->name == config('permission.roles.superuser')){
+                if($model->name == Config::superuser()){
                     return response()->json([], HttpCodes::FORBIDDEN);
                 }
             }
@@ -376,7 +377,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
 
     protected function filterModel($model)
     {
-        return $model->name == config('permission.roles.superuser') || $model->name == config('permission.roles.admin');
+        return $model->name == Config::superuser() || Config::admin();
     }
 
     abstract protected function delta() : string;

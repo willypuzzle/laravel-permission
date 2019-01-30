@@ -3,6 +3,7 @@
 namespace Idsign\Permission\Test;
 
 use Idsign\Permission\Contracts\Container;
+use Idsign\Permission\Libraries\Config;
 use Monolog\Handler\TestHandler;
 use Idsign\Permission\Contracts\Role;
 use Illuminate\Database\Schema\Blueprint;
@@ -100,8 +101,8 @@ abstract class TestCase extends Orchestra
         // Use test User model for users provider
         $app['config']->set('auth.providers.users.model', User::class);
 
-        $app['config']->set('permission.user.model.api.model', User::class);
-        $app['config']->set('permission.user.model.web.model', User::class);
+        $app['config']->set(Config::ROOT.'user.model.api.model', User::class);
+        $app['config']->set(Config::ROOT.'user.model.web.model', User::class);
 
         $app['log']->getMonolog()->pushHandler(new TestHandler());
     }

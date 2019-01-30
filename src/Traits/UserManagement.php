@@ -1,6 +1,7 @@
 <?php
 
 namespace Idsign\Permission\Traits;
+use Idsign\Permission\Libraries\Config;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Willypuzzle\Helpers\Facades\General\Traits;
@@ -19,7 +20,7 @@ trait UserManagement{
     {
         $guard = $this->usedGuard();
 
-        $userConfigs = config("permission.user.model.{$guard}");
+        $userConfigs = Config::userModel($guard, true);
 
         $model = app($userConfigs['model']);
 
@@ -67,12 +68,12 @@ trait UserManagement{
      */
     protected function isSuperuser()
     {
-        return $this->isRole(config('permission.roles.superuser'));
+        return $this->isRole(Config::superuser());
     }
 
     protected function isAdmin()
     {
-        return $this->isRole(config('permission.roles.admin'));
+        return $this->isRole(Config::admin());
     }
 
     protected function isRole($role)

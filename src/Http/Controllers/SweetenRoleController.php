@@ -3,6 +3,7 @@
 namespace Idsign\Permission\Http\Controllers;
 
 use Idsign\Permission\Exceptions\UnsupportedDatabaseType;
+use Idsign\Permission\Libraries\Config;
 use Idsign\Permission\Models\Role;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class SweetenRoleController extends PermissionRoleSectionContainerController
 {
     public function __construct()
     {
-        $this->addPermittedRoles([config('permission.roles.superuser'), config('permission.roles.admin')]);
+        $this->addPermittedRoles([Config::superuser(), Config::admin()]);
     }
 
     protected function delta() : string
@@ -40,10 +41,10 @@ class SweetenRoleController extends PermissionRoleSectionContainerController
         $query = $this->getModel()->query()->where(['guard_name' => $this->usedGuard()]);
 
         if($this->isSuperuser()){
-            $query = $query->where('name', '!=', config('permission.roles.superuser'));
+            $query = $query->where('name', '!=', Config::superuser());
         }else if($this->isAdmin()){
-            $query = $query->where('name', '!=', config('permission.roles.superuser'))
-                           ->where('name', '!=', config('permission.roles.admin'));
+            $query = $query->where('name', '!=', Config::superuser())
+                           ->where('name', '!=', Config::admin());
         }
 
         return Datatable::of($query)->addColumn('containers', function ($role){
@@ -131,7 +132,7 @@ class SweetenRoleController extends PermissionRoleSectionContainerController
     {
         $role = $this->getRole($roleId);
 
-        $container = $role->containers()->where(config('permission.table_names.containers').'.id', $containerId)->firstOrFail();
+        $container = $role->containers()->where(Config::containersTable().'.id', $containerId)->firstOrFail();
 
         return [
             'container' => $container->toArray(),
@@ -182,7 +183,7 @@ class SweetenRoleController extends PermissionRoleSectionContainerController
         ])->firstOrFail();
 
         if(!$this->isSuperuser()){
-            $relatedContainer = $section->containers()->where(config('permission.table_names.containers').'.id', $container->id)->first();
+            $relatedContainer = $section->containers()->where(Config::containersTable().'.id', $container->id)->first();
             $superadmin = null;
             if($relatedContainer->pivot->superadmin === null){
                 $superadmin = $section->superadmin;

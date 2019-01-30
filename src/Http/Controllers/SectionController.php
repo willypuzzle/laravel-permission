@@ -3,6 +3,7 @@
 namespace Idsign\Permission\Http\Controllers;
 
 use Idsign\Permission\Exceptions\SectionDoesNotExist;
+use Idsign\Permission\Libraries\Config;
 use Idsign\Permission\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,7 @@ class SectionController extends PermissionRoleSectionContainerController
 {
     public function __construct()
     {
-        $this->addPermittedRoles([config('permission.roles.superuser')]);
+        $this->addPermittedRoles([Config::superuser()]);
     }
 
     protected function delta() : string

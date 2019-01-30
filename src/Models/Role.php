@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Models;
 
+use Idsign\Permission\Libraries\Config;
 use Illuminate\Database\Eloquent\Model;
 use Idsign\Permission\Traits\HasPermissions;
 use Idsign\Permission\Exceptions\RoleDoesNotExist;
@@ -39,7 +40,7 @@ class Role extends Model implements RoleContract
 
         parent::__construct($attributes);
 
-        $this->setTable(config('permission.table_names.roles'));
+        $this->setTable(Config::rolesTable());
     }
 
     public static function boot()
@@ -77,8 +78,8 @@ class Role extends Model implements RoleContract
     public function permissions($sectionId = null, $containerId = null, $permissionId = null): BelongsToMany
     {
         $relation =  $this->belongsToMany(
-            config('permission.models.permission'),
-            config('permission.table_names.role_has_permissions'),
+            Config::permissionModel(),
+            Config::roleHasPermissionsTable(),
             'role_id',
             'permission_id',
             'id',
@@ -103,8 +104,8 @@ class Role extends Model implements RoleContract
     public function containers()
     {
         return $this->belongsToMany(
-            config('permission.models.container'),
-            config('permission.table_names.container_role'),
+            Config::containerModel(),
+            Config::containerRoleTable(),
             'role_id',
             'container_id',
             'id',
@@ -120,7 +121,7 @@ class Role extends Model implements RoleContract
         return $this->morphedByMany(
             getModelForGuard($this->attributes['guard_name']),
             'model',
-            config('permission.table_names.model_has_roles'),
+            Config::modelHasRolesTable(),
             'role_id',
             'model_id'
         );

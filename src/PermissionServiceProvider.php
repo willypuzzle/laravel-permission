@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission;
 
+use Idsign\Permission\Libraries\Config;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
 use Idsign\Permission\Contracts\Role as RoleContract;
@@ -14,7 +15,7 @@ class PermissionServiceProvider extends ServiceProvider
     public function boot(PermissionRegistrar $permissionLoader)
     {
         $this->publishes([
-            __DIR__.'/../config/permission.php' => config_path('permission.php'),
+            __DIR__.'/../config/'.Config::ROOT.'php' => config_path(Config::ROOT.'php'),
         ], 'config');
 
         if (! class_exists('CreatePermissionTables')) {
@@ -40,7 +41,7 @@ class PermissionServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__.'/../config/permission.php',
+            __DIR__.'/../config/'.Config::ROOT.'php',
             'permission'
         );
 
@@ -53,14 +54,14 @@ class PermissionServiceProvider extends ServiceProvider
 
     protected function registerModelBindings()
     {
-        $config = $this->app->config['permission.models'];
+        $config = $this->app->config[Config::ROOT.'models'];
 
         $this->app->bind(PermissionContract::class, $config['permission']);
         $this->app->bind(RoleContract::class, $config['role']);
         $this->app->bind(SectionContract::class, $config['section']);
         $this->app->bind(ContainerContract::class, $config['container']);
 
-        $userConfigs  = config("permission.user.model");
+        $userConfigs  = Config::userModels();
 
         if(is_array($userConfigs)){
             foreach ($userConfigs as $userConfig){

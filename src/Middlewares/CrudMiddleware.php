@@ -4,6 +4,7 @@ namespace Idsign\Permission\Middlewares;
 
 use Closure;
 use Idsign\Permission\Exceptions\MalformedParameter;
+use Idsign\Permission\Libraries\Config;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Auth;
@@ -67,6 +68,6 @@ class CrudMiddleware
      * @return array
      * */
     private function resolveIndex(string $index) : array {
-        return array_flatten([config("permission.crud.{$index}", null)]);
+        return array_flatten([Config::crud($index)]);
     }
 }

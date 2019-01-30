@@ -3,6 +3,7 @@
 namespace Idsign\Permission\Test;
 
 use Idsign\Permission\Exceptions\PermissionAlreadyExists;
+use Idsign\Permission\Libraries\Config;
 use Idsign\Permission\Middlewares\CrudMiddleware;
 use Idsign\Permission\Models\Permission;
 use Idsign\Permission\Models\Section;
@@ -290,7 +291,7 @@ class MiddlewareTest extends TestCase
 
     protected function getCrudStuff() : array
     {
-        $data = config('permission.crud');
+        $data = Config::crud();
 
         $crudRoutes = array_keys($data);
         $crudPermissions = array_flatten(array_values($data));

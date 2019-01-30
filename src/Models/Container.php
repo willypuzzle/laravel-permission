@@ -4,6 +4,7 @@ namespace Idsign\Permission\Models;
 
 use Idsign\Permission\Exceptions\ContainerAlreadyExists;
 use Idsign\Permission\Exceptions\ContainerDoesNotExist;
+use Idsign\Permission\Libraries\Config;
 use Idsign\Permission\PermissionRegistrar;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -27,7 +28,7 @@ class Container extends Model implements ContainerInterface
 
         parent::__construct($attributes);
 
-        $this->setTable(config('permission.table_names.containers'));
+        $this->setTable(Config::containersTable());
     }
 
     public static function create(array $attributes = [])
@@ -82,11 +83,11 @@ class Container extends Model implements ContainerInterface
 
     public function permissions_from_users($modelId = null, $sectionId = null)
     {
-        $relationship = $this->belongsToMany(config('permission.models.permission'), config('permission.table_names.model_has_permissions'), 'container_id');
+        $relationship = $this->belongsToMany(Config::permissionModel(), Config::modelHasPermissionsTable(), 'container_id');
 
         if($modelId){
             $relationship = $relationship->wherePivot('model_id', $modelId)
-                                         ->wherePivot('model_type', Database::getMorphedModelInverse(config('permission.user.model.'.$this->guard_name.'.model')));
+                                         ->wherePivot('model_type', Database::getMorphedModelInverse(Config::userModel($this->guard_name)));
         }
 
         if($sectionId){
@@ -99,8 +100,8 @@ class Container extends Model implements ContainerInterface
     public function permissions_from_roles($roleId = null, $sectionId = null)
     {
         $relationship = $this->belongsToMany(
-            config('permission.models.permission'),
-            config('permission.table_names.role_has_permissions'),
+            Config::permissionModel(),
+            Config::roleHasPermissionsTable(),
             'container_id',
             'permission_id'
         );
@@ -119,8 +120,8 @@ class Container extends Model implements ContainerInterface
     public function roles()
     {
         return $this->belongsToMany(
-            config('permission.model.role'),
-            config('permission.table_names.container_role'),
+            Config::roleModel(),
+            Config::containerRoleTable(),
             'container_id',
             'role_id',
             'id',
@@ -131,8 +132,8 @@ class Container extends Model implements ContainerInterface
     public function sections() : BelongsToMany
     {
         $relationship = $this->belongsToMany(
-            config('permission.models.section'),
-            config('permission.table_names.container_section'),
+            Config::sectionModel(),
+            Config::containerSectionTable(),
             'container_id',
             'section_id'
         )->withPivot(['superadmin']);

@@ -4,6 +4,7 @@ namespace Idsign\Permission\Traits;
 
 use Idsign\Permission\Contracts\{Constants, Container, Permission, Role, Section};
 use Idsign\Permission\Exceptions\RoleDoesNotExist;
+use Idsign\Permission\Libraries\Config;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -26,11 +27,11 @@ trait HasRoles
 
     public function isEnabled()
     {
-        $fieldName = config('permission.user.state.field_name');
+        $fieldName = Config::userStateFieldName();
 
         if($fieldName && isset($this->attributes[$fieldName])){
-            $enabledValues = config('permission.user.state.values.enabled') ?? [];
-            $disabledValues = config('permission.user.state.values.disabled') ?? [];
+            $enabledValues = Config::userStateEnabled() ?? [];
+            $disabledValues = Config::userStateDisabled() ?? [];
             $value = $this->attributes[$fieldName];
             if(in_array($value, $disabledValues)){
                 return false;
@@ -38,7 +39,7 @@ trait HasRoles
             if(in_array($value, $enabledValues)){
                 return true;
             }
-            return config('permission.user.state.values.default') ?? false;
+            return Config::userStateDefault() ?? false;
         }else{
             return true;
         }
@@ -51,9 +52,9 @@ trait HasRoles
     public function roles(): MorphToMany
     {
         return $this->morphToMany(
-            config('permission.models.role'),
+            Config::roleModel(),
             'model',
-            config('permission.table_names.model_has_roles'),
+            Config::modelHasRolesTable(),
             'model_id',
             'role_id'
         );
@@ -65,9 +66,9 @@ trait HasRoles
     public function permissions($sectionId = null, $containerId = null, $permissionId = null): MorphToMany
     {
         $relation =  $this->morphToMany(
-            config('permission.models.permission'),
+            Config::permissionModel(),
             'model',
-            config('permission.table_names.model_has_permissions'),
+            Config::modelHasPermissionsTable(),
             'model_id',
             'permission_id'
         )->withPivot(['enabled']);
@@ -90,9 +91,9 @@ trait HasRoles
     public function sections_from_permissions($containerId = null, $permissionId = null, $sectionId = null): MorphToMany
     {
         $relation = $this->morphToMany(
-            config('permission.models.section'),
+            Config::sectionModel(),
             'model',
-            config('permission.table_names.model_has_permissions'),
+            Config::modelHasPermissionsTable(),
             'model_id',
             'section_id'
         );
@@ -137,7 +138,7 @@ trait HasRoles
         return $query->whereHas('roles', function ($query) use ($roles) {
             $query->where(function ($query) use ($roles) {
                 foreach ($roles as $role) {
-                    $query->orWhere(config('permission.table_names.roles').'.id', $role->id);
+                    $query->orWhere(Config::rolesTable().'.id', $role->id);
                 }
             });
         });
@@ -278,7 +279,7 @@ trait HasRoles
             if($checkEnabled){
                 $set = $this->roles()->where([
                     'state' => Role::ENABLED,
-                    config('permission.table_names.roles').'.id' => $roles->id
+                    Config::rolesTable().'.id' => $roles->id
                 ])->get();
 
                 return $set->count() > 0;
@@ -652,7 +653,7 @@ trait HasRoles
 
     public function isSuperuser()
     {
-        return $this->hasRole(config('permission.roles.superuser'));
+        return $this->hasRole(Config::superuser());
     }
 
     private function parseCollectionForPermissionTree(Collection $collection) : array

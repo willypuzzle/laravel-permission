@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Test;
 
+use Idsign\Permission\Libraries\Config;
 use Idsign\Permission\Models\Container;
 use Idsign\Permission\Models\Permission;
 use Idsign\Permission\Models\Section;
@@ -32,9 +33,9 @@ class SectionTest extends TestCase
 
         $section->delete();
 
-        $this->assertCount(0, DB::table(config('permission.table_names.role_has_permissions'))->where('section_id', $sectionId)->get());
-        $this->assertCount(0, DB::table(config('permission.table_names.model_has_permissions'))->where('section_id', $sectionId)->get());
-        $this->assertCount(0, DB::table(config('permission.table_names.model_has_roles'))->where('section_id', $sectionId)->get());
+        $this->assertCount(0, DB::table(Config::roleHasPermissionsTable())->where('section_id', $sectionId)->get());
+        $this->assertCount(0, DB::table(Config::modelHasPermissionsTable())->where('section_id', $sectionId)->get());
+        $this->assertCount(0, DB::table(Config::modelHasRolesTable())->where('section_id', $sectionId)->get());
 
     }
 }

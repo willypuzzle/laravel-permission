@@ -12,6 +12,7 @@ use Illuminate\Contracts\Cache\Repository;
 use Idsign\Permission\Contracts\Permission;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Idsign\Permission\Exceptions\PermissionDoesNotExist;
+use Idsign\Permission\Libraries\Config;
 
 class PermissionRegistrar
 {
@@ -65,21 +66,21 @@ class PermissionRegistrar
 
     public function getPermissions(): Collection
     {
-        return $this->cache->remember($this->cacheKeyPermissions, config('permission.cache_expiration_time'), function () {
+        return $this->cache->remember($this->cacheKeyPermissions, Config::cacheExpirationTime(), function () {
             return app(Permission::class)->with('roles')->get();
         });
     }
 
     public function getSections(): Collection
     {
-        return $this->cache->remember($this->cacheKeySections, config('permission.cache_expiration_time'), function () {
+        return $this->cache->remember($this->cacheKeySections, Config::cacheExpirationTime(), function () {
             return app(Section::class)->with([])->get();
         });
     }
 
     public function getContainers(): Collection
     {
-        return $this->cache->remember($this->cacheKeyContainers, config('permission.cache_expiration_time'), function () {
+        return $this->cache->remember($this->cacheKeyContainers, Config::cacheExpirationTime(), function () {
             return app(Container::class)->with([])->get();
         });
     }

@@ -2,13 +2,13 @@
 
 namespace Idsign\Permission\Http\Controllers;
 
-use Idsign\Libraries\Config;
+use Idsign\Permission\Libraries\Config;
 
 class RoleController extends PermissionRoleSectionContainerController
 {
     public function __construct()
     {
-        $this->addPermittedRoles([config('permission.roles.superuser')]);
+        $this->addPermittedRoles([Config::superuser()]);
     }
 
     protected function delta() : string

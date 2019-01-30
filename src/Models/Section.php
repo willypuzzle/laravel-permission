@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Models;
 
+use Idsign\Permission\Libraries\Config;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Idsign\Permission\PermissionRegistrar;
@@ -33,7 +34,7 @@ class Section extends Model implements SectionContract
 
         parent::__construct($attributes);
 
-        $this->setTable(config('permission.table_names.sections'));
+        $this->setTable(Config::sectionsTable());
     }
 
     public static function boot()
@@ -89,7 +90,7 @@ class Section extends Model implements SectionContract
         $relation = $this->morphedByMany(
             getModelForGuard($this->attributes['guard_name']),
             'model',
-            config('permission.table_names.model_has_permissions'),
+            Config::modelHasPermissionsTable(),
             'section_id',
             'model_id'
         )->withPivot(['enabled']);
@@ -111,8 +112,8 @@ class Section extends Model implements SectionContract
     public function roles($containerId = null, $permissionId = null): BelongsToMany
     {
         $relation = $this->belongsToMany(
-            config('permission.models.role'),
-            config('permission.table_names.role_has_permissions'),
+            Config::roleModel(),
+            Config::roleHasPermissionsTable(),
             'section_id',
             'role_id'
         );
@@ -134,8 +135,8 @@ class Section extends Model implements SectionContract
     public function permissions_from_roles($containerId = null, $roleId = null): BelongsToMany
     {
         $relation =  $this->belongsToMany(
-            config('permission.models.permission'),
-            config('permission.table_names.role_has_permissions'),
+            Config::permissionModel(),
+            Config::roleHasPermissionsTable(),
             'section_id',
             'permission_id'
         );
@@ -157,8 +158,8 @@ class Section extends Model implements SectionContract
     public function permissions_from_users($containerId = null, $userId = null): BelongsToMany
     {
         $relation = $this->belongsToMany(
-            config('permission.models.permission'),
-            config('permission.table_names.model_has_permissions'),
+            Config::permissionModel(),
+            Config::modelHasPermissionsTable(),
             'section_id',
             'permission_id'
         )->withPivot(['enabled']);
@@ -169,7 +170,7 @@ class Section extends Model implements SectionContract
 
         if($userId){
             $relation = $relation->wherePivot('model_id', $userId)
-                ->wherePivot('model_type', Database::getMorphedModelInverse(config('permission.user.model.'.$this->guard_name.'.model')));
+                ->wherePivot('model_type', Database::getMorphedModelInverse(Config::userModel($this->guard_name)));
         }
 
         return $relation;
@@ -217,12 +218,12 @@ class Section extends Model implements SectionContract
 
     public function parent()
     {
-        return $this->belongsTo(config('permission.models.section'), 'section_id');
+        return $this->belongsTo(Config::sectionModel(), 'section_id');
     }
 
     public function children($onlyEnabled = true)
     {
-        $relation = $this->hasMany(config('permission.models.section'), 'section_id');
+        $relation = $this->hasMany(Config::sectionModel(), 'section_id');
 
         if($onlyEnabled){
             $relation = $relation->where('state',SectionContract::ENABLED);
@@ -247,8 +248,8 @@ class Section extends Model implements SectionContract
             $deltaSections = $container->sections()->get()->toArray();
         }
 
-        $query = $query->where(config('permission.table_names.sections').'.section_id', $rootId);
-        $query = $query->orderBy(config('permission.table_names.sections').'.order', 'asc');
+        $query = $query->where(Config::sectionsTable().'.section_id', $rootId);
+        $query = $query->orderBy(Config::sectionsTable().'.order', 'asc');
 
         if($onlyEnabled){
             $query = $query->where('state', SectionContract::ENABLED);
@@ -279,8 +280,8 @@ class Section extends Model implements SectionContract
     public function containers() : BelongsToMany
     {
         $relationship = $this->belongsToMany(
-            config('permission.models.container'),
-            config('permission.table_names.container_section'),
+            Config::containerModel(),
+            Config::containerSectionTable(),
             'section_id',
             'container_id'
         )->withPivot(['superadmin']);

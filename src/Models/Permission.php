@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Models;
 
+use Idsign\Permission\Libraries\Config;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Idsign\Permission\PermissionRegistrar;
@@ -30,7 +31,7 @@ class Permission extends Model implements PermissionContract
 
         parent::__construct($attributes);
 
-        $this->setTable(config('permission.table_names.permissions'));
+        $this->setTable(Config::permissionsTable());
     }
 
     public static function boot()
@@ -68,8 +69,8 @@ class Permission extends Model implements PermissionContract
     public function roles($sectionId = null, $containerId = null, $roleId = null): BelongsToMany
     {
         $relation = $this->belongsToMany(
-            config('permission.models.role'),
-            config('permission.table_names.role_has_permissions'),
+            Config::roleModel(),
+            Config::roleHasPermissionsTable(),
             'permission_id',
             'role_id',
             'id',
@@ -99,7 +100,7 @@ class Permission extends Model implements PermissionContract
         $relation =  $this->morphedByMany(
             getModelForGuard($this->attributes['guard_name']),
             'model',
-            config('permission.table_names.model_has_permissions'),
+            Config::modelHasPermissionsTable(),
             'permission_id',
             'model_id'
         );
