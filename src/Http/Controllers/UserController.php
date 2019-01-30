@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Willypuzzle\Helpers\Contracts\HttpCodes;
 
-abstract class UserController extends RoleCheckerController
+class UserController extends RoleCheckerController
 {
     protected $rolesField = 'roles';
     protected $passwordField = 'password';
@@ -74,7 +74,10 @@ abstract class UserController extends RoleCheckerController
         return $delta;
     }
 
-    abstract protected function validateCreation(Request $request);
+    protected function validateCreation(Request $request)
+    {
+
+    }
 
     /**
      * @param Request $request
@@ -250,9 +253,15 @@ abstract class UserController extends RoleCheckerController
         }
     }
 
-    abstract protected function validateUpdate(Request $request, $userId);
+    protected function validateUpdate(Request $request, $userId)
+    {
 
-    abstract protected function validateUpdateComplete(Request $request, $userId);
+    }
+
+    protected function validateUpdateComplete(Request $request, $userId)
+    {
+
+    }
 
     /**
      * @param Request $request

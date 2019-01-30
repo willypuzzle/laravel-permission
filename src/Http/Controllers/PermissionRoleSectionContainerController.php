@@ -99,7 +99,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
 
         if($this->delta() == self::ROLE && !$this->isSuperuser()){
             $collection = $collection->filter(function ($el){
-                return !$this->filterModel($el);
+                return $el->name != Config::superuser();
             });
         }
 
@@ -377,7 +377,7 @@ abstract class PermissionRoleSectionContainerController extends RoleCheckerContr
 
     protected function filterModel($model)
     {
-        return $model->name == Config::superuser() || Config::admin();
+        return $model->name == Config::superuser() || $model->name == Config::admin();
     }
 
     abstract protected function delta() : string;

@@ -57,6 +57,7 @@ class Support
                 });
 
                 Route::prefix('/roles')->group(function (){
+                    Route::get('/all', 'RoleController@all');
                     Route::get('/data', 'RoleController@data');
                     Route::get('/config', 'RoleController@config');
                     Route::post('/create', 'RoleController@create');
@@ -76,7 +77,7 @@ class Support
 
                 Route::prefix('/users')->group(function (){
                     Route::get('/config', 'UserController@config');
-                    Route::get('/get-logged-user', 'UserController@loggedUser');
+                    Route::get('/logged-user', 'UserController@loggedUser');
                 });
             });
     }
