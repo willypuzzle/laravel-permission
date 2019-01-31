@@ -146,7 +146,7 @@ class Config
 
     private static function userState($key)
     {
-        return self::config('user.state.'.$key);
+        return self::config('user.fields.state.'.$key);
     }
 
     public static function userStateFieldName()

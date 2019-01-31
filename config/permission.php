@@ -13,29 +13,38 @@ return [
                 'model' => \App\Models\User::class
             ],//models are differentiated by guard
         ],
-        'state' => [
-            /*
-             * You can set the name of the state field
-             */
-            'field_name' => 'state',
-            /*
-             * You can set enabled/disabled values for the user and the default value in case of not both matching.
-             */
-            'values' => [
-                'disabled' => [0],
-                'enabled' => [1],
-                'default' => false //if any of the above values is catched this will be the result of isEnabled function
+        'fields' => [
+            'id' => [
+                'field_name' => 'id',
+                'order' => 0
+            ],
+            'state' => [
+                /*
+                 * You can set the name of the state field
+                 */
+                'field_name' => 'state',
+                /*
+                 * You can set enabled/disabled values for the user and the default value in case of not both matching.
+                 */
+                'values' => [
+                    'disabled' => [0],
+                    'enabled' => [1],
+                    'default' => false //if any of the above values is catched this will be the result of isEnabled function
+                ],
+                'order' => 3
+            ],
+            'name' => [
+                'field_name' => 'name',
+                'order' => 1
+            ],
+            'surname' => [
+                'field_name' => 'surname',
+                'order' => 2
+            ],
+            'password' => [
+                'field_name' => 'password'
             ]
         ],
-        'name' => [
-            'field_name' => 'name'
-        ],
-        'surname' => [
-            'field_name' => 'surname'
-        ],
-        'password' => [
-            'field_name' => 'password'
-        ]
     ],
 
 
