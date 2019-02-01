@@ -78,6 +78,7 @@ class Support
                 Route::prefix('/users')->group(function (){
                     Route::get('/config', 'UserController@config');
                     Route::get('/logged-user', 'UserController@loggedUser');
+                    Route::get('/data', 'UserController@data');
                 });
             });
     }

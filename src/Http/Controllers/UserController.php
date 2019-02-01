@@ -5,6 +5,7 @@ namespace Idsign\Permission\Http\Controllers;
 use Idsign\Permission\Libraries\Config;
 use Idsign\Permission\Contracts\Role as RoleInterface;
 use Idsign\Vuetify\Facades\Datatable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +36,100 @@ class UserController extends RoleCheckerController
         $userArray = $userModel->toArray();
         $userArray['roles'] = $userModel->roles->toArray();
         return $userArray;
+    }
+
+    /**
+     * @return mixed
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    public function data()
+    {
+        $this->checkForPermittedRoles();
+
+        list($query, $model) = $this->buildQueryForData();
+
+        list($loggedUser, $allRoles) = $this->getStuffForData();
+
+        return Datatable::of($query)
+            ->editColumn('roles', function($c) use ($model) {
+                return $model
+                        ->findOrFail($c->id)
+                        ->roles()
+                        ->get()
+                        ->map(function ($el){
+                            return $el->name;
+                        })
+                        ->toArray();
+            })
+            ->editColumn('all-roles', function ($c) use ($allRoles, $loggedUser){
+                if($c->id == $loggedUser->id) {
+                    $allRoles = $allRoles->map(function ($el){
+                        $el = $el->toArray();
+                        if(($this->isSuperuser() && $el['name'] == Config::superuser()) || (!$this->isSuperuser() && $el['name'] == Config::admin())){
+                            $el['disable'] = true;
+                        }else{
+                            $el['disable'] = false;
+                        }
+                        return $el;
+                    });
+                }
+                return array_map(function ($el){
+                    $el['value'] = $el['name'];
+                    return $el;
+                }, $allRoles->values()->toArray());
+            })
+            ->editColumn('no-delete', function ($c) use ($loggedUser){
+                return $c->id == $loggedUser->id;
+            })
+            ->editColumn('no-check', function ($c) use ($loggedUser){
+                return $c->id == $loggedUser->id;
+            })->make(true);
+    }
+
+    private function getStuffForData()
+    {
+        $loggedUser = $this->getLoggedUser();
+
+        $allRoles = app(RoleInterface::class)
+            ->where('guard_name', $this->usedGuard())
+            ->get()->filter(function ($el){
+                if(!$this->isSuperuser()){
+                    return $el->name != Config::superuser();
+                }
+                return true;
+            });
+
+        return [$loggedUser, $allRoles];
+    }
+
+    /**
+     * @return array
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    private function buildQueryForData()
+    {
+        $model = $this->getUserModel();
+        $useSoftDelete = in_array(SoftDeletes::class, class_uses($model));
+        if($useSoftDelete){
+            $query = $model->newQuery()->where('deleted_at', NULL);
+        }else{
+            $query = $model->newQuery();
+        }
+
+        if(!$this->isSuperuser()){
+            $superuserRoleModel = app(RoleInterface::class)->findByName(Config::superuser(), $this->usedGuard());
+            $userModel = app(Config::userModel($this->usedGuard()));
+            $query->whereNotExists(function ($query) use ($userModel, $superuserRoleModel){
+                $pivotTableName = Config::modelHasRolesTable();
+                $query->select(DB::raw(1))
+                    ->from($pivotTableName)
+                    ->whereRaw($userModel->getTable().'.'.$userModel->getKeyName().' = '.$pivotTableName.'.model_id')
+                    ->where($pivotTableName.'.model_type', $userModel->roles()->getMorphClass())
+                    ->where($pivotTableName.'.role_id', $superuserRoleModel->id);
+            });
+        }
+
+        return [$query, $model];
     }
 
     /*public function all()
