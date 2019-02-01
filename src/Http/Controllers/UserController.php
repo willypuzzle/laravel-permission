@@ -3,9 +3,10 @@
 namespace Idsign\Permission\Http\Controllers;
 
 use Idsign\Permission\Libraries\Config;
-use Idsign\Permission\Contracts\Role;
+use Idsign\Permission\Contracts\Role as RoleInterface;
 use Idsign\Vuetify\Facades\Datatable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Willypuzzle\Helpers\Contracts\HttpCodes;
 
@@ -36,12 +37,7 @@ class UserController extends RoleCheckerController
         return $userArray;
     }
 
-    /**
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
-     * @throws \Illuminate\Auth\AuthenticationException
-     */
-    public function all()
+    /*public function all()
     {
         $this->checkForPermittedRoles();
 
@@ -79,11 +75,6 @@ class UserController extends RoleCheckerController
 
     }
 
-    /**
-     * @param Request $request
-     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
-     * @throws \Illuminate\Auth\AuthenticationException
-     */
     public function create(Request $request)
     {
         $this->checkForPermittedRoles();
@@ -115,11 +106,6 @@ class UserController extends RoleCheckerController
 
     }
 
-    /**
-     * @return mixed
-     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
-     * @throws \Illuminate\Auth\AuthenticationException
-     */
     public function data()
     {
         $this->checkForPermittedRoles();
@@ -153,11 +139,6 @@ class UserController extends RoleCheckerController
         return response()->json($dataComplete);
     }
 
-    /**
-     * @param $userId
-     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
-     * @throws \Illuminate\Auth\AuthenticationException
-     */
     public function delete($userId)
     {
         $this->checkForPermittedRoles();
@@ -176,12 +157,6 @@ class UserController extends RoleCheckerController
         $user->delete();
     }
 
-    /**
-     * @param $userId
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
-     * @throws \Illuminate\Auth\AuthenticationException
-     */
     public function get($userId)
     {
         $this->checkForPermittedRoles();
@@ -189,11 +164,6 @@ class UserController extends RoleCheckerController
         return response()->json($this->getUserModel()->findOrFail($userId)->toArray());
     }
 
-    /**
-     * @param Request $request
-     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
-     * @throws \Illuminate\Auth\AuthenticationException
-     */
     public function multi_delete(Request $request)
     {
         $this->checkForPermittedRoles();
@@ -220,12 +190,6 @@ class UserController extends RoleCheckerController
         }
     }
 
-    /**
-     * @param Request $request
-     * @param $userId
-     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
-     * @throws \Illuminate\Auth\AuthenticationException
-     */
     public function update(Request $request, $userId)
     {
         $this->checkForPermittedRoles();
@@ -263,11 +227,6 @@ class UserController extends RoleCheckerController
 
     }
 
-    /**
-     * @param Request $request
-     * @param $userId
-     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
-     */
     public function updateComplete(Request $request, $userId)
     {
         $this->validateUpdateComplete($request, $userId);
@@ -282,5 +241,5 @@ class UserController extends RoleCheckerController
     protected function updateCompleteAddons(Request $request, $user)
     {
         //This function is useful to perform more action on updateComplete
-    }
+    }*/
 }
