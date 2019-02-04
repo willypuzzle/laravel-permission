@@ -66,6 +66,12 @@ return [
                 ]
             ]
         ],
+        'users' => [
+            'username' => [
+                'it' => 'Email',
+                'en' => 'Email'
+            ]
+        ]
     ],
 
 
