@@ -80,6 +80,7 @@ class Support
                     Route::get('/logged-user', 'UserController@loggedUser');
                     Route::get('/data', 'UserController@data');
                     Route::post('/set-roles/{userId}', 'UserController@setRoles');
+                    Route::delete('/delete', 'UserController@deleteAdvanced');
                 });
             });
     }

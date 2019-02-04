@@ -140,6 +140,8 @@ class UserController extends RoleCheckerController
      */
     public function setRoles(Request $request, $userId)
     {
+        $this->checkForPermittedRoles();
+
         $this->validate($request, [
             'roles' => [
                 'array'
@@ -160,6 +162,39 @@ class UserController extends RoleCheckerController
         $user = $this->getUserModel()->where(Config::userIdName(), $userId)->firstOrFail();
 
         $user->syncRoles($roles);
+    }
+
+    public function deleteAdvanced(Request $request)
+    {
+        $this->checkForPermittedRoles();
+
+        $validatedData = $request->validate([
+            'items' => 'required|array'
+        ]);
+
+        $loggedUser = $this->getLoggedUser();
+
+        $idFieldName = Config::userIdName();
+
+        $models = [];
+
+        foreach ($validatedData['items'] as $item){
+            $model = $this->getUserModel()->where([$idFieldName => $item])->firstOrFail();
+            if($model->isSuperuser() && !$this->isSuperuser()){
+                return response()->json([], HttpCodes::FORBIDDEN);
+            }
+            $models[] = $model;
+        }
+
+        foreach ($validatedData['items'] as $item){
+            if($item == $loggedUser->$idFieldName){
+                return response()->json([], HttpCodes::FORBIDDEN);
+            }
+        }
+
+        collect($models)->each(function ($model){
+            $model->delete();
+        });
     }
 
     /*public function all()
