@@ -132,6 +132,36 @@ class UserController extends RoleCheckerController
         return [$query, $model];
     }
 
+    /**
+     * @param Request $request
+     * @param $userId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    public function setRoles(Request $request, $userId)
+    {
+        $this->validate($request, [
+            'roles' => [
+                'array'
+            ]
+        ]);
+
+        $rolesNames = $request->input('roles');
+        $roles = app(RoleInterface::class)->where([
+            'guard_name' => $this->usedGuard()
+        ])->whereIn('name', $rolesNames)->get();
+
+        if(count($rolesNames) != $roles->count()){
+            return response()->json([
+                'note' => 'roles don\'t match'
+            ], HttpCodes::CONFLICT);
+        }
+
+        $user = $this->getUserModel()->where(Config::userIdName(), $userId)->firstOrFail();
+
+        $user->syncRoles($roles);
+    }
+
     /*public function all()
     {
         $this->checkForPermittedRoles();

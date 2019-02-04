@@ -79,6 +79,7 @@ class Support
                     Route::get('/config', 'UserController@config');
                     Route::get('/logged-user', 'UserController@loggedUser');
                     Route::get('/data', 'UserController@data');
+                    Route::post('/set-roles/{userId}', 'UserController@setRoles');
                 });
             });
     }
