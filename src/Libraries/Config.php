@@ -149,9 +149,29 @@ class Config
         return self::config('user.fields.'.$key);
     }
 
-    public static function userIdName()
+    public static function userIdFieldName()
     {
         return self::userFields('id.field_name');
+    }
+
+    public static function userNameFieldName()
+    {
+        return self::userFields('name.field_name');
+    }
+
+    public static function userSurnameFieldName()
+    {
+        return self::userFields('name.field_name');
+    }
+
+    public static function userUsernameFieldName()
+    {
+        return self::userFields('username.field_name');
+    }
+
+    public static function userUsernameRules()
+    {
+        return self::userFields('username.rules');
     }
 
     private static function userState($key)

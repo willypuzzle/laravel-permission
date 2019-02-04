@@ -81,6 +81,7 @@ class Support
                     Route::get('/data', 'UserController@data');
                     Route::post('/set-roles/{userId}', 'UserController@setRoles');
                     Route::delete('/delete', 'UserController@deleteAdvanced');
+                    Route::put('/update-field/{userId}', 'UserController@update');
                 });
             });
     }

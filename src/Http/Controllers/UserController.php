@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Willypuzzle\Helpers\Contracts\HttpCodes;
 
 class UserController extends RoleCheckerController
@@ -159,7 +160,7 @@ class UserController extends RoleCheckerController
             ], HttpCodes::CONFLICT);
         }
 
-        $user = $this->getUserModel()->where(Config::userIdName(), $userId)->firstOrFail();
+        $user = $this->getUserModel()->where(Config::userIdFieldName(), $userId)->firstOrFail();
 
         $user->syncRoles($roles);
     }
@@ -174,7 +175,7 @@ class UserController extends RoleCheckerController
 
         $loggedUser = $this->getLoggedUser();
 
-        $idFieldName = Config::userIdName();
+        $idFieldName = Config::userIdFieldName();
 
         $models = [];
 
@@ -188,13 +189,113 @@ class UserController extends RoleCheckerController
 
         foreach ($validatedData['items'] as $item){
             if($item == $loggedUser->$idFieldName){
-                return response()->json([], HttpCodes::FORBIDDEN);
+                return response()->json([], HttpCodes::CONFLICT);
             }
         }
 
         collect($models)->each(function ($model){
             $model->delete();
         });
+    }
+
+    public function update(Request $request, $userId)
+    {
+        $this->checkForPermittedRoles();
+
+        list(
+                $idFieldName,
+                $nameFieldName,
+                $surnameFieldName,
+                $stateFieldName,
+                $usernameFieldName
+            ) = $this->getFieldNames();
+
+        $model = $this->getUserModel()->where([$idFieldName => $userId])->firstOrFail();
+
+        $this->validate($request, [
+            'field' => [
+                'required',
+                Rule::in([
+                    $nameFieldName,
+                    $surnameFieldName,
+                    $stateFieldName,
+                    $usernameFieldName,
+                ])
+            ],
+        ]);
+
+        if($model->isSuperuser() && !$this->isSuperuser()){
+            return response()->json([], HttpCodes::FORBIDDEN);
+        }
+
+        $loggedUser = $this->getLoggedUser();
+
+        $field = $request->input('field');
+
+        if($loggedUser->$idFieldName == $model->$idFieldName){
+            switch ($field){
+                case $stateFieldName:
+                    return response()->json([], HttpCodes::CONFLICT);
+            }
+        }
+
+        $this->updateValidation($field, $request);
+
+        $data = $request->all();
+        unset($data['field']);
+
+        $model->update($data);
+    }
+
+    private function updateValidation($field, $request)
+    {
+        list(
+            $idFieldName,
+            $nameFieldName,
+            $surnameFieldName,
+            $stateFieldName,
+            $usernameFieldName
+            ) = $this->getFieldNames();
+
+        switch ($field){
+            case $nameFieldName:
+            case $surnameFieldName:
+                $this->validate($request, [
+                    $field => [
+                        'required',
+                    ]
+                ]);
+                break;
+            case $stateFieldName:
+                $this->validate($request, [
+                    $field => [
+                        'required',
+                        Rule::in(array_merge(Config::userStateEnabled(), Config::userStateDisabled())),
+
+                    ]
+                ]);
+                break;
+            case $usernameFieldName:
+                $this->validate($request, [
+                    $field => [
+                        'required',
+                        Config::userUsernameRules(),
+                        Rule::unique($this->getUserModel()->getTable())
+                    ]
+                ]);
+                break;
+        }
+    }
+
+    private function getFieldNames()
+    {
+        return [
+            Config::userIdFieldName(),
+            Config::userNameFieldName(),
+            Config::userSurnameFieldName(),
+            Config::userStateFieldName(),
+            Config::userUsernameFieldName(),
+        ];
     }
 
     /*public function all()

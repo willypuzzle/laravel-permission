@@ -31,7 +31,7 @@ return [
                     'enabled' => [1],
                     'default' => false //if any of the above values is catched this will be the result of isEnabled function
                 ],
-                'order' => 3
+                'order' => 4
             ],
             'name' => [
                 'field_name' => 'name',
@@ -40,6 +40,11 @@ return [
             'surname' => [
                 'field_name' => 'surname',
                 'order' => 2
+            ],
+            'username' => [
+                'field_name' => 'email',
+                'order' => 3,
+                'rules' => 'email'
             ],
             'password' => [
                 'field_name' => 'password'
