@@ -242,9 +242,12 @@ class UserController extends RoleCheckerController
         $this->updateValidation($field, $request);
 
         $data = $request->all();
-        unset($data['field']);
+        $field = $data['field'];
+        $value = $data[$field];
 
-        $model->update($data);
+        $model->$field = $value;
+
+        $model->save();
     }
 
     private function updateValidation($field, $request)
