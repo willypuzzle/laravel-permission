@@ -47,7 +47,8 @@ return [
                 'rules' => 'email'
             ],
             'password' => [
-                'field_name' => 'password'
+                'field_name' => 'password',
+                'order' => 5
             ]
         ],
     ],
