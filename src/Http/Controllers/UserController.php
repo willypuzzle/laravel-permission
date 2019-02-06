@@ -413,6 +413,25 @@ class UserController extends RoleCheckerController
         ];
     }
 
+    /**
+     * @param $userId
+     * @return mixed
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    public function getContainers($userId)
+    {
+        $this->checkForPermittedRoles();
+
+        $model = $this->getUserModel()
+                      ->with('roles.containers')
+                      ->where(Config::userIdFieldName(), $userId)
+                      ->firstOrFail();
+
+        return $model->roles->flatMap(function ($role){
+            return $role->containers;
+        })->unique('name');
+    }
+
     /*public function all()
     {
         $this->checkForPermittedRoles();

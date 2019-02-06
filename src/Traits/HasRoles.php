@@ -642,7 +642,7 @@ trait HasRoles
         foreach ($sections as $section){
             $children = $this->parseChidrenForTree($section['children'], $container, $type, $checkEnabled);
             $permissions = $this->parseCollectionForPermissionTree($this->getPermissionPerTreeType($type, $section['model'], $container, $checkEnabled));
-            $result[$section['model']->name] = [
+            $result[is_array($section['model']) ? $section['model']['name'] : $section['model']->name] = [
                 'permissions' => $permissions,
                 'children' => $children,
             ];

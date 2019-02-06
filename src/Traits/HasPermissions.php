@@ -74,6 +74,8 @@ trait HasPermissions
     {
         if (is_string($name)) {
             $name = app($class)->findByName($name, $this->getDefaultGuardName());
+        }else if(is_array($name)){
+            $name = app($class)->findByName($name['name'], $this->getDefaultGuardName());
         }
 
         return $name;

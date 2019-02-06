@@ -83,6 +83,7 @@ class Support
                     Route::delete('/delete', 'UserController@deleteAdvanced');
                     Route::put('/update-field/{userId}', 'UserController@update');
                     Route::post('/create', 'UserController@create');
+                    Route::get('/get-containers/{userId}', 'UserController@getContainers');
                 });
             });
     }
