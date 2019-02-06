@@ -82,6 +82,7 @@ class Support
                     Route::post('/set-roles/{userId}', 'UserController@setRoles');
                     Route::delete('/delete', 'UserController@deleteAdvanced');
                     Route::put('/update-field/{userId}', 'UserController@update');
+                    Route::post('/create', 'UserController@create');
                 });
             });
     }

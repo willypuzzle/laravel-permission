@@ -144,9 +144,13 @@ class Config
         return self::config('user.model');
     }
 
-    private static function userFields($key)
+    public static function userFields($key = null)
     {
-        return self::config('user.fields.'.$key);
+        if($key){
+            return self::config('user.fields.'.$key);
+        }else{
+            return self::config('user.fields');
+        }
     }
 
     public static function userIdFieldName()

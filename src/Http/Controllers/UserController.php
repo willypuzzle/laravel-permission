@@ -150,9 +150,7 @@ class UserController extends RoleCheckerController
         ]);
 
         $rolesNames = $request->input('roles');
-        $roles = app(RoleInterface::class)->where([
-            'guard_name' => $this->usedGuard()
-        ])->whereIn('name', $rolesNames)->get();
+        $roles = $this->getRolesFromNames($rolesNames);
 
         if(count($rolesNames) != $roles->count()){
             return response()->json([
@@ -163,6 +161,13 @@ class UserController extends RoleCheckerController
         $user = $this->getUserModel()->where(Config::userIdFieldName(), $userId)->firstOrFail();
 
         $user->syncRoles($roles);
+    }
+
+    private function getRolesFromNames(array $rolesNames)
+    {
+        return app(RoleInterface::class)->where([
+            'guard_name' => $this->usedGuard()
+        ])->whereIn('name', $rolesNames)->get();
     }
 
     public function deleteAdvanced(Request $request)
@@ -274,7 +279,6 @@ class UserController extends RoleCheckerController
                     $field => [
                         'required',
                         Rule::in(array_merge(Config::userStateEnabled(), Config::userStateDisabled())),
-
                     ]
                 ]);
                 break;
@@ -298,6 +302,114 @@ class UserController extends RoleCheckerController
             Config::userSurnameFieldName(),
             Config::userStateFieldName(),
             Config::userUsernameFieldName(),
+        ];
+    }
+
+    public function create(Request $request)
+    {
+        $validationArray = $this->getValidationArrayForCreation();
+
+        $this->validate($request, $validationArray);
+
+        $rolesNames = $request->input('roles');
+
+        $roles = $this->getRolesFromNames($rolesNames);
+
+        if(count($rolesNames) != $roles->count()){
+            return response()->json([
+                'note' => 'roles don\'t match'
+            ], HttpCodes::CONFLICT);
+        }
+
+        $model = $this->getUserModel();
+
+        $fields = $this->getFieldNamesForCreation();
+        foreach ($fields as $key => $value){
+            $field = $value['field_name'];
+            switch ($key){
+                case 'password':
+                    $model->$field = \Illuminate\Support\Facades\Hash::make($request->input($field));
+                    break;
+                case 'state':
+                case 'name':
+                case 'surname':
+                default:
+                    $model->$field = $request->input($field);
+            }
+        }
+        $model->save();
+
+        $model->syncRoles($roles);
+    }
+
+    private function getFieldNamesForCreation()
+    {
+        return array_filter(Config::userFields(), function ($value, $key){
+            return isset($value['field_name']) && !!$value['field_name'] && $key != 'id';
+        }, ARRAY_FILTER_USE_BOTH);
+    }
+
+    private function getValidationArrayForCreation()
+    {
+        $fields = $this->getFieldNamesForCreation();
+
+        $validationArray = [];
+        foreach ($fields as $key => $value){
+            $validationArray[$value['field_name']] = $this->getValidationLineForCreation($key, $value);
+        }
+
+        $validationArray['roles'] = [
+            'array'
+        ];
+
+        return $validationArray;
+    }
+
+    private function getValidationLineForCreation($key, $value)
+    {
+        switch ($key){
+            case 'state':
+                return $this->getValidationLineForCreationState($value);
+            case 'username':
+                return $this->getValidationLineForCreationUsername($value);
+            case 'password':
+                return $this->getValidationLineForCreationPassword($value);
+            case 'name':
+            case 'surname':
+            default:
+                return $this->getValidationLineForCreationDefault($value);
+
+        }
+    }
+
+    private function getValidationLineForCreationState($value)
+    {
+        return [
+            'required',
+            Rule::in(array_merge(Config::userStateEnabled(), Config::userStateDisabled())),
+        ];
+    }
+
+    private function getValidationLineForCreationUsername($value)
+    {
+        return [
+            'required',
+            Config::userUsernameRules(),
+            Rule::unique($this->getUserModel()->getTable())
+        ];
+    }
+
+    private function getValidationLineForCreationPassword($value)
+    {
+        return [
+            'required'
+        ];
+    }
+
+    private function getValidationLineForCreationDefault($value)
+    {
+        return [
+            'required'
         ];
     }
 
