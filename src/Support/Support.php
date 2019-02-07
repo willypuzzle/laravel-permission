@@ -84,6 +84,8 @@ class Support
                     Route::put('/update-field/{userId}', 'UserController@update');
                     Route::post('/create', 'UserController@create');
                     Route::get('/get-containers/{userId}', 'UserController@getContainers');
+                    Route::get('/get-roles-permission-tree/{userId}/{containerId}', 'UserController@getRolesPermissionTree');
+                    Route::get('/get-user-permission-tree/{userId}/{containerId}', 'UserController@getUserPermissionTree');
                 });
             });
     }

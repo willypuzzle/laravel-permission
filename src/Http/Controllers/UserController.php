@@ -2,12 +2,13 @@
 
 namespace Idsign\Permission\Http\Controllers;
 
+use Idsign\Permission\Contracts\Constants;
 use Idsign\Permission\Libraries\Config;
 use Idsign\Permission\Contracts\Role as RoleInterface;
+use Idsign\Permission\Contracts\Container as ContainerInterface;
 use Idsign\Vuetify\Facades\Datatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Willypuzzle\Helpers\Contracts\HttpCodes;
@@ -158,7 +159,7 @@ class UserController extends RoleCheckerController
             ], HttpCodes::CONFLICT);
         }
 
-        $user = $this->getUserModel()->where(Config::userIdFieldName(), $userId)->firstOrFail();
+        $user = $this->getUserById($userId);
 
         $user->syncRoles($roles);
     }
@@ -170,6 +171,11 @@ class UserController extends RoleCheckerController
         ])->whereIn('name', $rolesNames)->get();
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
     public function deleteAdvanced(Request $request)
     {
         $this->checkForPermittedRoles();
@@ -185,7 +191,7 @@ class UserController extends RoleCheckerController
         $models = [];
 
         foreach ($validatedData['items'] as $item){
-            $model = $this->getUserModel()->where([$idFieldName => $item])->firstOrFail();
+            $model = $this->getUserById($item);
             if($model->isSuperuser() && !$this->isSuperuser()){
                 return response()->json([], HttpCodes::FORBIDDEN);
             }
@@ -215,7 +221,7 @@ class UserController extends RoleCheckerController
                 $usernameFieldName
             ) = $this->getFieldNames();
 
-        $model = $this->getUserModel()->where([$idFieldName => $userId])->firstOrFail();
+        $model = $this->getUserById($userId);
 
         $this->validate($request, [
             'field' => [
@@ -422,14 +428,71 @@ class UserController extends RoleCheckerController
     {
         $this->checkForPermittedRoles();
 
-        $model = $this->getUserModel()
-                      ->with('roles.containers')
-                      ->where(Config::userIdFieldName(), $userId)
-                      ->firstOrFail();
+        $model = $this->getUserById($userId, ['roles.containers']);
 
         return $model->roles->flatMap(function ($role){
             return $role->containers;
         })->unique('name');
+    }
+
+    /**
+     * @param $userId
+     * @param array $with
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    protected function getUserById($userId, $with = [])
+    {
+        return $this->getUserModel()
+                ->with($with)
+                ->where(Config::userIdFieldName(), $userId)
+                ->firstOrFail();
+    }
+
+    /**
+     * @param $userId
+     * @param $containerId
+     * @return mixed
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    public function getRolesPermissionTree($userId, $containerId)
+    {
+        return $this->getPermissionsTree($userId, $containerId,Constants::TREE_TYPE_ROLE);
+    }
+
+    /**
+     * @param $userId
+     * @param $containerId
+     * @return mixed
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    public function getUserPermissionTree($userId ,$containerId)
+    {
+        return $this->getPermissionsTree($userId, $containerId,Constants::TREE_TYPE_USER);
+    }
+
+    /**
+     * @param $userId
+     * @param $containerId
+     * @param $type
+     * @return mixed
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    private function getPermissionsTree($userId, $containerId, $type)
+    {
+        $user = $this->getUserById($userId);
+
+        $container = $this->getContainerById($containerId);
+
+        return $user->getPermissionsTree($container, $type, false);
+    }
+
+    protected function getContainerById($containerId)
+    {
+        return app(ContainerInterface::class)->where([
+            'id' => $containerId,
+            'guard_name' => $this->usedGuard()
+        ])->firstOrFail();
     }
 
     /*public function all()
