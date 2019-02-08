@@ -3,6 +3,7 @@
 namespace Idsign\Permission\Models;
 
 use Idsign\Permission\Libraries\Config;
+use Idsign\Permission\Libraries\ModelSupport;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Idsign\Permission\PermissionRegistrar;
@@ -268,10 +269,16 @@ class Section extends Model implements SectionContract
         $return = [];
         foreach ($data as $model){
             $children = self::tree($container, $onlyEnabled, $model['id'], $global);
-            $return[] = [
+            $d = [
                 'model' => $model,
-                'children' => $children
+                'children' => $children,
             ];
+
+            if(!$global){
+                $d['superadmin-forced'] = ModelSupport::elaborateSuperadmin($d, $container);
+            }
+
+            $return[] = $d;
         }
 
         return $return;

@@ -3,6 +3,7 @@
 namespace Idsign\Permission\Models;
 
 use Idsign\Permission\Libraries\Config;
+use Idsign\Permission\Libraries\ModelSupport;
 use Illuminate\Database\Eloquent\Model;
 use Idsign\Permission\Traits\HasPermissions;
 use Idsign\Permission\Exceptions\RoleDoesNotExist;
@@ -221,16 +222,6 @@ class Role extends Model implements RoleContract
 
     private function elaborateSuperadmin($element, $container)
     {
-        $relativeSuperadmin = array_filter($element['model']['containers'] ?? [], function ($el) use ($container){
-            return $el['id'] == $container->id;
-        });
-
-        $relativeSuperadmin = isset($relativeSuperadmin[0]['pivot']['superadmin']) ? $relativeSuperadmin[0]['pivot']['superadmin'] : null;
-
-        if($relativeSuperadmin === null){
-            return $element['model']['superadmin'];
-        }
-
-        return $relativeSuperadmin;
+        return ModelSupport::elaborateSuperadmin($element, $container);
     }
 }
