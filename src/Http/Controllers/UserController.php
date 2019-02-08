@@ -6,6 +6,8 @@ use Idsign\Permission\Contracts\Constants;
 use Idsign\Permission\Libraries\Config;
 use Idsign\Permission\Contracts\Role as RoleInterface;
 use Idsign\Permission\Contracts\Container as ContainerInterface;
+use Idsign\Permission\Contracts\Section as SectionInterface;
+use Idsign\Permission\Contracts\Permission as PermissionInterface;
 use Idsign\Vuetify\Facades\Datatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
@@ -491,6 +493,51 @@ class UserController extends RoleCheckerController
     {
         return app(ContainerInterface::class)->where([
             'id' => $containerId,
+            'guard_name' => $this->usedGuard()
+        ])->firstOrFail();
+    }
+
+    public function setUserPermission(Request $request, $userId, $containerId, $sectionId, $permissionId)
+    {
+        $this->validate($request, [
+            'value' => [
+                'required',
+                Rule::in(['enabled', 'disabled', 'legacy'])
+            ]
+        ]);
+
+        $user = $this->getUserById($userId);
+
+        $container = $this->getContainerById($containerId);
+
+        $section = $this->getSectionById($sectionId);
+
+        $permission = $this->getPermissionById($permissionId);
+
+        $user->revokePermissionTo($permission, $section, $container);
+
+        switch ($request->input('value')){
+            case 'enabled':
+                $user->givePermissionTo($permission, $section, $container, true);
+                break;
+            case 'disabled':
+                $user->givePermissionTo($permission, $section, $container, false);
+                break;
+        }
+    }
+
+    protected function getSectionById($sectionId)
+    {
+        return app(SectionInterface::class)->where([
+            'id' => $sectionId,
+            'guard_name' => $this->usedGuard()
+        ])->firstOrFail();
+    }
+
+    protected function getPermissionById($permissionId)
+    {
+        return app(PermissionInterface::class)->where([
+            'id' => $permissionId,
             'guard_name' => $this->usedGuard()
         ])->firstOrFail();
     }

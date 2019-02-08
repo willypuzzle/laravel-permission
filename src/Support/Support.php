@@ -86,6 +86,7 @@ class Support
                     Route::get('/get-containers/{userId}', 'UserController@getContainers');
                     Route::get('/get-roles-permission-tree/{userId}/{containerId}', 'UserController@getRolesPermissionTree');
                     Route::get('/get-user-permission-tree/{userId}/{containerId}', 'UserController@getUserPermissionTree');
+                    Route::post('/set-user-permission/{userId}/{containerId}/{sectionId}/{permissionId}', 'UserController@setUserPermission');
                 });
             });
     }
