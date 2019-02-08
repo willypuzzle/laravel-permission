@@ -645,6 +645,8 @@ trait HasRoles
             $result[is_array($section['model']) ? $section['model']['name'] : $section['model']->name] = [
                 'permissions' => $permissions,
                 'children' => $children,
+                'model' => is_array($section['model']) ? $section['model'] : $section['model']->toArray(),
+                'superadmin-reserved-section' => $section['superadmin-forced']
             ];
         }
 
