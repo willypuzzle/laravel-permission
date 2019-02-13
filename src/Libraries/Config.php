@@ -173,6 +173,11 @@ class Config
         return self::userFields('username.field_name');
     }
 
+    public static function userPasswordFieldName()
+    {
+        return self::userFields('password.field_name');
+    }
+
     public static function userUsernameRules()
     {
         return self::userFields('username.rules');

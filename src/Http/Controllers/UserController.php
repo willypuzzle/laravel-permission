@@ -12,6 +12,7 @@ use Idsign\Vuetify\Facades\Datatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Willypuzzle\Helpers\Contracts\HttpCodes;
 
@@ -220,7 +221,8 @@ class UserController extends RoleCheckerController
                 $nameFieldName,
                 $surnameFieldName,
                 $stateFieldName,
-                $usernameFieldName
+                $usernameFieldName,
+                $passwordFieldName,
             ) = $this->getFieldNames();
 
         $model = $this->getUserById($userId);
@@ -233,6 +235,7 @@ class UserController extends RoleCheckerController
                     $surnameFieldName,
                     $stateFieldName,
                     $usernameFieldName,
+                    $passwordFieldName,
                 ])
             ],
         ]);
@@ -258,7 +261,7 @@ class UserController extends RoleCheckerController
         $field = $data['field'];
         $value = $data[$field];
 
-        $model->$field = $value;
+        $model->$field = $field != $passwordFieldName ? $value : Hash::make($value);
 
         $model->save();
     }
@@ -270,12 +273,14 @@ class UserController extends RoleCheckerController
             $nameFieldName,
             $surnameFieldName,
             $stateFieldName,
-            $usernameFieldName
+            $usernameFieldName,
+            $passwordFieldName
             ) = $this->getFieldNames();
 
         switch ($field){
             case $nameFieldName:
             case $surnameFieldName:
+            case $passwordFieldName:
                 $this->validate($request, [
                     $field => [
                         'required',
@@ -310,6 +315,7 @@ class UserController extends RoleCheckerController
             Config::userSurnameFieldName(),
             Config::userStateFieldName(),
             Config::userUsernameFieldName(),
+            Config::userPasswordFieldName()
         ];
     }
 
