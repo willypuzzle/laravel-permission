@@ -559,10 +559,11 @@ trait HasRoles
         $directPermissionsFiltered = $directPermissions->filter(function ($permission){return $permission->pivot->enabled;});
 
         return $this->getPermissionsViaRoles($section, $container, $checkEnabled)->filter(function ($rolePermission) use ($directPermissions){
-                if($directPermissions->first(function ($p) use ($rolePermission){
+                $p = $directPermissions->first(function ($p) use ($rolePermission){
                     return $p->name == $rolePermission->name;
-                })){
-                    return $directPermissions->pivot->enabled;
+                });
+                if($p){
+                    return $p->pivot->enabled;
                 }
 
                 return true;
