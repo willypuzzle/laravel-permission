@@ -224,4 +224,14 @@ class Role extends Model implements RoleContract
     {
         return ModelSupport::elaborateSuperadmin($element, $container);
     }
+
+    public function isSuperuser()
+    {
+        return $this->name == Config::superuser();
+    }
+
+    public function isAdmin()
+    {
+        return $this->name == Config::admin();
+    }
 }
