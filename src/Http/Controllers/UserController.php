@@ -163,6 +163,23 @@ class UserController extends RoleCheckerController
         }
 
         $user = $this->getUserById($userId);
+        $loggedUser = $this->getLoggedUser();
+
+        if($user->id == $loggedUser->id){
+            if($this->isSuperuser()){
+                if (!$roles->first(function ($role){
+                    return $role->isSuperuser();
+                })){
+                    return response()->json([], HttpCodes::FORBIDDEN);
+                };
+            }else if($this->isAdmin()){
+                if (!$roles->first(function ($role){
+                    return $role->isAdmin();
+                })){
+                    return response()->json([], HttpCodes::FORBIDDEN);
+                };
+            }
+        }
 
         $user->syncRoles($roles);
     }
