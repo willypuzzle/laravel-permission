@@ -6,6 +6,7 @@ use Idsign\Permission\Exceptions\ContainerAlreadyExists;
 use Idsign\Permission\Exceptions\ContainerDoesNotExist;
 use Idsign\Permission\Libraries\Config;
 use Idsign\Permission\PermissionRegistrar;
+use Idsign\Permission\Traits\RefreshesPermissionCache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -15,6 +16,8 @@ use Idsign\Permission\Contracts\Container as ContainerInterface;
 
 class Container extends Model implements ContainerInterface
 {
+    use RefreshesPermissionCache;
+
     protected $guarded = ['id'];
 
     protected $casts = [
