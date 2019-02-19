@@ -668,4 +668,19 @@ trait HasRoles
 
         return $result;
     }
+
+    public function getContainers($onlyEnabled = true)
+    {
+        if($this->isSuperuser()){
+            return app(Container::class)->all()->filter(function ($container) use ($onlyEnabled){
+                return $onlyEnabled ? $container->state == Role::ENABLED : true;
+            });
+        }
+
+        return $this->roles->flatMap(function ($role){
+            return $role->containers;
+        })->unique('name')->filter(function ($container) use ($onlyEnabled){
+            return $onlyEnabled ? $container->state == Role::ENABLED : true;
+        });
+    }
 }
