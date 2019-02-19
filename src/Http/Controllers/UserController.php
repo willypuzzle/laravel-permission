@@ -455,9 +455,7 @@ class UserController extends RoleCheckerController
 
         $model = $this->getUserById($userId, ['roles.containers']);
 
-        return $model->roles->flatMap(function ($role){
-            return $role->containers;
-        })->unique('name');
+        return $model->getContainers(false);
     }
 
     /**
