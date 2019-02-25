@@ -24,9 +24,10 @@ trait PermissionChecker
     /**
      * @param User $user
      * @param $permissions
+     * @param $container
      * @param null $sections
      */
-    protected function checkPermission(User $user, $permissions, $sections = null)
+    protected function checkPermission(User $user, $permissions, $container, $sections = null)
     {
         if($this->isSuperuser()){
             return;
@@ -42,13 +43,13 @@ trait PermissionChecker
 
         foreach ($permissions as $permission){
             if(is_null($sections)){
-                if(!$user->hasPermissionTo($permission, $this->section)){
+                if(!$user->hasPermissionTo($permission, $this->section, $container)){
                     throw UnauthorizedException::forPermissions([$permission, $this->section]);
                 }
             }else{
                 $sectionCtrl = false;
                 foreach ($sections as $section){
-                    if($user->hasPermissionTo($permission, $section)){
+                    if($user->hasPermissionTo($permission, $section, $container)){
                         $sectionCtrl = true;
                     }
                 }
@@ -61,13 +62,14 @@ trait PermissionChecker
 
     /**
      * @param $permissions
+     * @param $container
      * @param null $sections
      * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
      */
-    protected function checkPermissionForLoggedUser($permissions, $sections = null)
+    protected function checkPermissionForLoggedUser($permissions, $container, $sections = null)
     {
         $user = $this->getLoggedUser();
 
-        $this->checkPermission($user, $permissions, $sections);
+        $this->checkPermission($user, $permissions, $container, $sections);
     }
 }
