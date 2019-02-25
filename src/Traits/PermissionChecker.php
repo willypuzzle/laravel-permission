@@ -9,8 +9,6 @@ trait PermissionChecker
 {
     use UserManagement;
 
-    private $section = null;
-
     protected function setSection($section)
     {
         $this->section = $section;
