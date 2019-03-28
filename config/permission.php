@@ -65,7 +65,27 @@ return [
                     'it' => 'Sito',
                     'en' => 'Container'
                 ]
-            ]
+            ],
+            'operative' => [
+                'plural' => [
+                    'it' => 'Console Operative',
+                    'en' => 'Operative Consoles',
+                ],
+                'singular' => [
+                    'it' => 'Console Operativa',
+                    'en' => 'Operative Console',
+                ]
+            ],
+            'istitutional' => [
+                'plural' => [
+                    'it' => 'Console Istituzionali',
+                    'en' => 'Institutional Consoles',
+                ],
+                'singular' => [
+                    'it' => 'Console Istituzionale',
+                    'en' => 'Institutional Console',
+                ]
+            ],
         ],
         'users' => [
             'username' => [
@@ -197,6 +217,12 @@ return [
          */
 
         'container_role' => 'container_role',
+
+        /*
+         * This pivot table is used to associate roles, that use operative console, to containers
+         */
+
+        'container_role_for_operative_console' => 'container_role_for_operative_console',
     ],
 
     /*

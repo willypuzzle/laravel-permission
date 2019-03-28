@@ -48,6 +48,7 @@ class CreatePermissionTables extends Migration
                 $table->json('label')->nullable();
                 $table->string('guard_name');
                 $table->integer('state')->default($defaultState)->comment('0 = disabled, 1 = enabled');
+                $table->boolean('operative')->default(false);
                 $table->json('meta')->nullable();
                 $table->timestamps();
             });
@@ -113,6 +114,26 @@ class CreatePermissionTables extends Migration
                 ->onUpdate('cascade');
 
             $table->unique(['role_id', 'container_id'], $tableNames['container_role'].'_unique_key');
+        });
+
+        Schema::create($tableNames['container_role_for_operative_console'], function (Blueprint $table) use ($tableNames){
+             $table->integer('id')->autoIncrement()->unique()->unsigned();
+             $table->integer('container_id')->unsigned();
+             $table->integer('role_id')->unsigned();
+
+             $table->foreign('role_id')
+                 ->references('id')
+                 ->on($tableNames['roles'])
+                 ->onDelete('cascade')
+                 ->onUpdate('cascade');
+
+             $table->foreign('container_id')
+                 ->references('id')
+                 ->on($tableNames['containers'])
+                 ->onDelete('cascade')
+                 ->onUpdate('cascade');
+
+             $table->unique(['role_id', 'container_id'], $tableNames['container_role_for_operative_console'].'_unique_key');
         });
 
         Schema::create($tableNames['model_has_permissions'], function (Blueprint $table) use ($tableNames) {
@@ -209,6 +230,7 @@ class CreatePermissionTables extends Migration
         Schema::dropIfExists($tableNames['model_has_roles']);
         Schema::dropIfExists($tableNames['model_has_permissions']);
         Schema::dropIfExists($tableNames['container_section']);
+        Schema::dropIfExists($tableNames['container_role_for_operative_console']);
         Schema::dropIfExists($tableNames['container_role']);
         Schema::dropIfExists($tableNames['roles']);
         Schema::dropIfExists($tableNames['sections']);
