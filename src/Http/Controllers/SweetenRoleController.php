@@ -47,9 +47,13 @@ class SweetenRoleController extends PermissionRoleSectionContainerController
                            ->where('name', '!=', Config::admin());
         }
 
-        return Datatable::of($query)->addColumn('containers', function ($role){
-            return $role->containers->toArray();
-        })->make(true);
+        return Datatable::of($query)
+                    ->addColumn('containers', function ($role){
+                        return $role->containers()->where('operative', false)->get()->toArray();
+                    })
+                    ->addColumn('operative_containers', function ($role){
+                        return $role->containers()->where('operative', true)->get()->toArray();
+                    })->make(true);
     }
 
     /**
