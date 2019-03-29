@@ -73,6 +73,7 @@ class Support
                     Route::put('/update-field/{modelId}', 'SweetenRoleController@update');
                     Route::post('/set-containers/{roleId}', 'SweetenRoleController@setContainers');
                     Route::get('/get-container-data/{roleId}/{containerId}', 'SweetenRoleController@getContainerData');
+                    Route::put('/set-containers-for-operative-console/{roleId}', 'SweetenRoleController@setContainersForOperativeConsole');
                 });
 
                 Route::prefix('/users')->group(function (){

@@ -114,6 +114,18 @@ class Role extends Model implements RoleContract
         );
     }
 
+    public function containers_for_operative_console()
+    {
+        return $this->belongsToMany(
+            Config::containerModel(),
+            Config::containerRoleForOperativeConsoleTable(),
+            'role_id',
+            'container_id',
+            'id',
+            'id'
+        );
+    }
+
     /**
      * A role belongs to some users of the model associated with its guard.
      */

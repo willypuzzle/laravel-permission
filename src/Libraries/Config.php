@@ -85,6 +85,11 @@ class Config
         return self::tableNames('container_role');
     }
 
+    public static function containerRoleForOperativeConsoleTable()
+    {
+        return self::tableNames('container_role_for_operative_console');
+    }
+
     public static function containerSectionTable()
     {
         return self::tableNames('container_section');

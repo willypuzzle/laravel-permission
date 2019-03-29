@@ -53,7 +53,11 @@ class SweetenRoleController extends PermissionRoleSectionContainerController
                     })
                     ->addColumn('operative_containers', function ($role){
                         return $role->containers()->where('operative', true)->get()->toArray();
-                    })->make(true);
+                    })
+                    ->addColumn('containers_for_operative_console', function ($role){
+                        return $role->containers_for_operative_console;
+                    })
+                    ->make(true);
     }
 
     /**
@@ -124,6 +128,32 @@ class SweetenRoleController extends PermissionRoleSectionContainerController
         }
 
         $role->containers()->sync($request->input('containers'));
+    }
+
+    /**
+     * @param Request $request
+     * @param $roleId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function setContainersForOperativeConsole(Request $request, $roleId)
+    {
+        $this->validate($request, [
+            'containers' => [
+                'array'
+            ]
+        ]);
+
+        $role = $this->getRole($roleId);
+
+        if(!$this->isSuperuser()){
+            if($this->filterModel($role)){
+                return response()->json([], HttpCodes::FORBIDDEN);
+            }
+        }
+
+        $role->containers_for_operative_console()->sync($request->input('containers'));
     }
 
     /**
