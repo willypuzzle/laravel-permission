@@ -4,6 +4,7 @@ namespace Idsign\Permission\Traits;
 
 use Illuminate\Foundation\Auth\User;
 use Idsign\Permission\Exceptions\UnauthorizedException;
+use Illuminate\Http\Request;
 
 trait PermissionChecker
 {
@@ -69,5 +70,59 @@ trait PermissionChecker
         $user = $this->getLoggedUser();
 
         $this->checkPermission($user, $permissions, $container, $sections);
+    }
+
+    /**
+     * @param Request $request
+     * @param $permissions
+     * @param null $sections
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    protected function checkPermissionByRequest(Request $request, $permissions, $sections = null)
+    {
+        $request->validate([
+            'container_id' => 'required'
+        ]);
+
+        $containerId = $request->input('container_id');
+
+        $user = $this->getLoggedUser();
+
+        $containers = $user->getContainers(true);
+
+        $container = $containers->first(function ($container) use ($containerId){
+            return $container->id == $containerId;
+        });
+
+        if(!$container){
+            throw UnauthorizedException::forContainer($containerId);
+        }
+
+        $this->checkPermission($user, $permissions, $container, $sections);
+    }
+
+    /**
+     * @param $permissions
+     * @param null $sections
+     * @throws \Idsign\Permission\Exceptions\DoesNotUseProperTraits
+     */
+    protected function checkPermissionForAnyContainer($permissions, $sections = null)
+    {
+        $user = $this->getLoggedUser();
+
+        $containers = $user->getContainers(true);
+
+        $delta = $containers->filter(function ($container) use ($user, $permissions, $sections){
+            try{
+                $this->checkPermission($user, $permissions, $container, $sections);
+            }catch (UnauthorizedException $ex) {
+                return false;
+            }
+            return true;
+        })->count() > 0;
+
+        if(!$delta){
+            throw UnauthorizedException::forPermissions($permissions);
+        }
     }
 }
