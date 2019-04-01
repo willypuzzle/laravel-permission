@@ -612,6 +612,18 @@ trait HasRoles
         return explode('|', trim($pipeString, $quoteCharacter));
     }
 
+    public function getPermissionsTreeForAllSites()
+    {
+        $containers = $this->getContainers();
+
+        return $containers->map(function ($container){
+            return [
+                'container_id' => $container->id,
+                'permissions' => $this->getPermissionsTree($container)
+            ];
+        });
+    }
+
     public function getPermissionsTree($container, $type = Constants::TREE_TYPE_GLOBAL, $checkEnabled = true) : array
     {
         $container = $this->resolveClass($container, Container::class);
