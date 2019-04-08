@@ -53,6 +53,14 @@ return [
         ],
     ],
 
+    'container' => [
+        'request' => [
+            // This is the key that is used when requests are fetched and parsed,
+            // for instance $request->input('container_id')
+            'key' => 'container_id',
+        ]
+    ],
+
 
     'labels' => [
         'container' => [

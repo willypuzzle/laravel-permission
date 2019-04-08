@@ -21,6 +21,21 @@ class Config
         return config(self::ROOT.$key);
     }
 
+    private static function containerConfig($key)
+    {
+        return self::config('container.'.$key);
+    }
+
+    private static function requestContainerConfig($key)
+    {
+        return self::containerConfig('request.'.$key);
+    }
+
+    public static function keyRequestContainerConfig()
+    {
+        return self::requestContainerConfig('key');
+    }
+
     public static function tableNames($table = null)
     {
         if(!$table){

@@ -2,6 +2,7 @@
 
 namespace Idsign\Permission\Traits;
 
+use Idsign\Permission\Libraries\Config;
 use Illuminate\Foundation\Auth\User;
 use Idsign\Permission\Exceptions\UnauthorizedException;
 use Illuminate\Http\Request;
@@ -80,11 +81,13 @@ trait PermissionChecker
      */
     protected function checkPermissionByRequest(Request $request, $permissions, $sections = null)
     {
+        $requestKey = Config::keyRequestContainerConfig();
+
         $request->validate([
-            'container_id' => 'required'
+            $requestKey => 'required'
         ]);
 
-        $containerId = $request->input('container_id');
+        $containerId = $request->input($requestKey);
 
         $user = $this->getLoggedUser();
 
